@@ -42,6 +42,14 @@ def html_to_text(html: str) -> str:
     for tag in soup(["script", "style", "table"]):
         tag.decompose()
 
+    # Insert an explicit break after every block-level element BEFORE
+    # flattening. Without this, filers whose paragraphs are <div>/<span>
+    # (Apple, among many) collapse into a handful of enormous blobs, because
+    # get_text only emits a single newline between nodes and there is then no
+    # blank line left to split on downstream.
+    for tag in soup.find_all(["p", "div", "br", "li", "h1", "h2", "h3", "h4"]):
+        tag.insert_after(soup.new_string("\n\n"))
+
     text = soup.get_text(separator="\n")
     text = text.replace("\xa0", " ")
     text = re.sub(r"[ \t]+", " ", text)
@@ -49,15 +57,37 @@ def html_to_text(html: str) -> str:
     return text.strip()
 
 
+# Words that, following "Item 1A", mean this is a sentence referring to the
+# section rather than the section heading itself. Apple's forward-looking
+# statements preamble ("...described in Item 1A of this Form 10-K under the
+# heading Risk Factors...") sits before the real section, so without this it
+# produces the longest span and wins.
+_CROSSREF = re.compile(
+    r"^\s*(of|in|to|under|and|or|above|below|entitled|hereof|herein|through)\b",
+    re.IGNORECASE,
+)
+
+
 def _find_all(text: str, item: str) -> list[int]:
     """
     Every offset where an item heading plausibly starts.
 
+    Two filters, both learned from real filings:
+
+      1. The heading must begin a line. Inline mentions mid-sentence are
+         cross-references, not headings.
+      2. What follows must not read as a cross-reference clause.
+
     Filers write "Item 1A.", "ITEM 1A -", "Item 1A:" and so on, so the
-    separator is optional and loose.
+    trailing separator stays optional.
     """
-    pattern = rf"item\s*{re.escape(item)}\s*[\.\-–—:]?"
-    return [m.start() for m in re.finditer(pattern, text, re.IGNORECASE)]
+    pattern = rf"^\s*item\s*{re.escape(item)}\s*[\.\-–—:]?"
+    out = []
+    for m in re.finditer(pattern, text, re.IGNORECASE | re.MULTILINE):
+        if _CROSSREF.match(text[m.end() : m.end() + 30]):
+            continue
+        out.append(m.start())
+    return out
 
 
 def extract_item(text: str, item: str) -> str | None:
