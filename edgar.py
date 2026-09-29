@@ -12,7 +12,7 @@ import time
 import requests
 
 # CHANGE THIS. EDGAR will 403 you otherwise.
-USER_AGENT = "Your Name your.email@example.com"
+USER_AGENT = "Francisco Condessa francisco.pedro.condessa@gmail.com"
 
 HEADERS = {"User-Agent": USER_AGENT}
 _last_call = 0.0
