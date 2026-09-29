@@ -55,6 +55,18 @@ MATCH_FLOOR = 0.25
 IDF_MATCH_FLOOR = 0.12
 MODIFIED_CEILING = 0.97
 
+# Paragraphs shorter than this are dropped as HTML-flattening fragments
+# (headings, page numbers, orphaned clauses).
+#
+# TUNED, not guessed. At 200 the filter was asymmetric: Apple's supply-shortage
+# conclusion is 197 chars in FY2024 and 210 in FY2025 ("and stock price" added),
+# so the old version was dropped and the new one had no counterpart to match.
+# boundary.py reports no asymmetric pairs at 130, and the per-cutoff paragraph
+# counts are stable there (old-minus-new holds at 7-8 across 100-180, versus 10
+# at 80 and 9 at 200). Going lower readmits headings, which produce their own
+# false diffs.
+MIN_CHARS = 130
+
 METRICS = ("char", "token", "idf")
 
 DEFAULT_FLOORS = {
@@ -81,16 +93,17 @@ STOPWORDS = frozenset(
 _WORD = re.compile(r"[a-z]+")
 
 
-def split_paragraphs(text: str, min_chars: int = 200) -> list[str]:
+def split_paragraphs(text: str, min_chars: int = MIN_CHARS) -> list[str]:
     """
     Split into paragraphs, dropping fragments.
 
     Short lines in a filing are almost always headings, page numbers, or
     orphaned clauses from the HTML flattening -- they create false diffs.
 
-    KNOWN BUG: a fixed cutoff is not neutral. A filer adding three words can
-    push a paragraph across it in one filing but not the other, leaving its
-    counterpart absent from the candidate pool. See boundary.py and the README.
+    The cutoff is not neutral, which is why it is tuned rather than assumed:
+    a filer adding three words can push a paragraph across a fixed threshold
+    in one filing but not the other, leaving its counterpart absent from the
+    candidate pool and forcing the matcher to guess. See MIN_CHARS.
     """
     parts = re.split(r"\n\s*\n", text)
     return [p.strip() for p in parts if len(p.strip()) >= min_chars]
@@ -177,7 +190,7 @@ def _match_greedy(old_paras, new_paras, sim_fn, floor):
 def diff_sections(
     old_text: str,
     new_text: str,
-    min_chars: int = 200,
+    min_chars: int = MIN_CHARS,
     metric: str = "idf",
     floor: float | None = None,
     ceiling: float = MODIFIED_CEILING,
@@ -203,7 +216,7 @@ def diff_sections(
     matcher = _match_optimal if _HAVE_SCIPY else _match_greedy
     pairs = matcher(old_paras, new_paras, sim_fn, floor)
 
-    added, modified = [], []
+    added, modified, unchanged = [], [], []
     matched_old = set()
 
     for i, new_p in enumerate(new_paras):
@@ -212,10 +225,13 @@ def diff_sections(
             continue
         j, score = pairs[i]
         matched_old.add(j)
-        if score < ceiling:
-            modified.append(
-                {"old": old_paras[j], "new": new_p, "similarity": round(score, 3)}
-            )
+        entry = {"old": old_paras[j], "new": new_p, "similarity": round(score, 3)}
+        # Above the ceiling the change is cosmetic (a date, a rounded number).
+        # These are reported separately rather than dropped: a pair one metric
+        # calls cosmetic and another calls a real edit is a genuine disagreement,
+        # and silently omitting them made such cases look like unmatched
+        # paragraphs in agreement.py.
+        (modified if score < ceiling else unchanged).append(entry)
 
     removed = [p for j, p in enumerate(old_paras) if j not in matched_old]
 
@@ -223,12 +239,14 @@ def diff_sections(
         "added": added,
         "removed": removed,
         "modified": modified,
+        "unchanged": unchanged,
         "stats": {
             "old_paragraphs": len(old_paras),
             "new_paragraphs": len(new_paras),
             "added": len(added),
             "removed": len(removed),
             "modified": len(modified),
+            "unchanged": len(unchanged),
             "metric": metric,
             "floor": floor,
             "matcher": "hungarian" if _HAVE_SCIPY else "greedy",

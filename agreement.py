@@ -10,9 +10,22 @@ ground truth available without hand-labelling every paragraph. Disagreements
 are the paragraphs worth reading by hand -- they are where the choice of metric
 changes the answer an investor sees.
 
-A disagreement that is a SWAP (metric A calls X modified and Y added while
-metric B says the reverse) usually means neither metric is wrong and the bug is
-upstream. That is how the min_chars boundary bug was found; see boundary.py.
+Two shapes of disagreement, and they mean different things:
+
+  FLOOR disagreements -- one metric says modified, the other says added or
+  removed. The metrics disagree about whether two paragraphs are the same
+  paragraph at all. When these form a SWAP (metric A calls X modified and Y
+  added while metric B says the reverse) neither metric is wrong and the bug is
+  upstream; that is how the min_chars boundary bug was found. See boundary.py.
+
+  CEILING disagreements -- one metric says modified, the other says unchanged.
+  Both agree the paragraphs are a pair; they disagree about whether the edit is
+  material or cosmetic. These are the more interesting ones to read, because a
+  metric that calls a real edit cosmetic is hiding information.
+
+An earlier version of this script only read the added/removed/modified buckets,
+so pairs scoring above MODIFIED_CEILING appeared in none of them and were
+misreported as "unmatched". diff2.diff_sections now returns them explicitly.
 
 Usage:
     python agreement.py AAPL 1A
@@ -27,15 +40,22 @@ KEY_CHARS = 120  # enough of a paragraph to identify it uniquely
 
 
 def classify(result: dict) -> dict[str, str]:
-    """Map each paragraph's opening characters to its bucket."""
+    """
+    Map each paragraph's opening characters to its bucket.
+
+    Every paragraph in both filings lands in exactly one of the four buckets,
+    so a key missing from one metric's map is a bug in this function, not a
+    property of the diff.
+    """
     out = {}
     for p in result["added"]:
         out[p[:KEY_CHARS]] = "added"
     for p in result["removed"]:
         out[p[:KEY_CHARS]] = "removed"
-    for m in result["modified"]:
-        out[m["new"][:KEY_CHARS]] = "modified"
-        out[m["old"][:KEY_CHARS]] = "modified"
+    for label in ("modified", "unchanged"):
+        for m in result[label]:
+            out[m["new"][:KEY_CHARS]] = label
+            out[m["old"][:KEY_CHARS]] = label
     return out
 
 
@@ -45,8 +65,8 @@ def compare(old_text, new_text, a=("token", 0.25), b=("idf", 0.12)):
 
     for (metric, floor), r in ((a, ra), (b, rb)):
         s = r["stats"]
-        print(f"{metric}@{floor}: {s['added']} added, "
-              f"{s['removed']} removed, {s['modified']} modified")
+        print(f"{metric}@{floor}: {s['added']} added, {s['removed']} removed, "
+              f"{s['modified']} modified, {s['unchanged']} unchanged")
     print()
 
     ca, cb = classify(ra), classify(rb)
@@ -62,12 +82,33 @@ def compare(old_text, new_text, a=("token", 0.25), b=("idf", 0.12)):
         print("every paragraph, not merely the same number of calls.\n")
         return
 
-    print("=== disagreements: read these by hand ===\n")
+    ceiling_pair = {"modified", "unchanged"}
+    floor_cases, ceiling_cases = [], []
     for k in disagree:
-        print(f"  {a[0]}={ca.get(k, 'unmatched'):<9} {b[0]}={cb.get(k, 'unmatched')}")
-        print(f"  {k}...\n")
-    print("If two of these form a swap, suspect the length filter rather than")
-    print("either metric, and run boundary.py.\n")
+        verdicts = {ca.get(k, "MISSING"), cb.get(k, "MISSING")}
+        (ceiling_cases if verdicts == ceiling_pair else floor_cases).append(k)
+
+    def show(title, keys, note):
+        if not keys:
+            return
+        print(f"=== {title} ({len(keys)}) ===")
+        print(note + "\n")
+        for k in keys:
+            print(f"  {a[0]}={ca.get(k, 'MISSING'):<10} {b[0]}={cb.get(k, 'MISSING')}")
+            print(f"  {k}...\n")
+
+    show("FLOOR disagreements", floor_cases,
+         "The metrics disagree about whether these are the same paragraph.\n"
+         "If two form a swap, suspect the length filter rather than either\n"
+         "metric, and run boundary.py.")
+    show("CEILING disagreements", ceiling_cases,
+         "Both metrics paired these; they disagree about whether the edit is\n"
+         "material or cosmetic. Read the pair and decide which is right --\n"
+         "a metric calling a real edit cosmetic is hiding information.")
+
+    if any(v == "MISSING" for v in list(ca.values()) + list(cb.values())):
+        print("MISSING means classify() lost a paragraph -- that is a bug here,")
+        print("not a property of the diff.\n")
 
 
 def main():

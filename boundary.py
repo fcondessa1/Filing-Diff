@@ -19,7 +19,7 @@ Usage:
 import re
 import sys
 
-from diff2 import split_paragraphs
+from diff2 import MIN_CHARS, split_paragraphs
 from idf import build_idf, weighted_similarity
 from run_diff import load_pair
 
@@ -29,7 +29,7 @@ def all_paragraphs(text: str) -> list[str]:
     return [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
 
 
-def find_asymmetric(old_text: str, new_text: str, min_chars: int = 200,
+def find_asymmetric(old_text: str, new_text: str, min_chars: int = MIN_CHARS,
                     band: int = 80, floor: float = 0.30):
     """
     Paragraphs near the cutoff whose counterpart falls on the other side.
@@ -61,7 +61,7 @@ def find_asymmetric(old_text: str, new_text: str, min_chars: int = 200,
     return hits
 
 
-def report(hits, min_chars=200):
+def report(hits, min_chars=MIN_CHARS):
     if not hits:
         print(f"No asymmetric filtering found at min_chars={min_chars}.\n")
         return
@@ -99,7 +99,7 @@ def cutoff_table(old_text: str, new_text: str):
 def main():
     ticker = sys.argv[1] if len(sys.argv) > 1 else "AAPL"
     item = sys.argv[2] if len(sys.argv) > 2 else "1A"
-    min_chars = int(sys.argv[3]) if len(sys.argv) > 3 else 200
+    min_chars = int(sys.argv[3]) if len(sys.argv) > 3 else MIN_CHARS
 
     old_text, new_text = load_pair(ticker, item)
     print()

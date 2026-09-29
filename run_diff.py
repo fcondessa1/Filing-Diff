@@ -44,6 +44,8 @@ def load_pair(ticker: str, item: str, form: str = "10-K"):
 
 def report(result: dict, excerpt: int = 400):
     print(f"\n{result['stats']}\n")
+    # 'unchanged' pairs are matched and judged cosmetic, so they are counted in
+    # stats but not printed -- they are what the tool exists to filter out.
 
     for para in result["added"]:
         print(f"[ADDED]\n{para[:excerpt]}\n")
