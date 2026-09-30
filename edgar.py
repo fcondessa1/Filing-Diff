@@ -10,7 +10,8 @@ import time
 import requests
 
 # CHANGE THIS. EDGAR will 403 you otherwise.
-USER_AGENT = "Francisco Condessa francisco.pedro.condessa@gmail.com"
+import os
+USER_AGENT = os.environ.get("EDGAR_USER_AGENT", "Your Name your.email@example.com")
 
 HEADERS = {"User-Agent": USER_AGENT}
 _last_call = 0.0
