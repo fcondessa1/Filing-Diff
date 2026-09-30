@@ -3,9 +3,7 @@ Minimal SEC EDGAR client.
 
 EDGAR is free and has no API key, but it DOES enforce two rules:
   1. You must send a User-Agent identifying yourself (name + email).
-  2. Max 10 requests/second. We stay well under.
-
-Violating #1 gets you a 403. Violating #2 gets you IP-banned.
+  2. Max 10 requests/second. 
 """
 
 import time

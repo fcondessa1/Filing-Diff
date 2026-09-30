@@ -10,6 +10,56 @@ the deltas.
 
 It does not predict prices. It compresses reading.
 
+## What it found
+
+First real run: Apple 10-K, FY2024 → FY2025, Item 1A (Risk Factors).
+Every flagged removal was checked by hand against both filings.
+
+**The tool flagged 12 removals. Two were material removals.**
+
+| verdict | count |
+|---|---|
+| Merged into a consolidated paragraph | 4 |
+| Scattered across several new paragraphs | 1 |
+| Reworded, still disclosed | 1 |
+| Partially removed (specific language dropped) | 2 |
+| Removed — boilerplate / summary sentence | 2 |
+| **Removed — material risk** | **2** |
+
+The material removals:
+
+- **Retail operations** — the standalone risk covering store construction
+  costs, retail leases, retail inventory and retail partners is gone. Retail
+  stores now appear only in passing, inside the natural-disasters paragraph.
+- **Digital rights management** — the risk that content providers could
+  require DRM or security technology the Company might not be able to develop
+  or license. The closest surviving text is about content licensing terms, a
+  separate risk that was already in the FY2024 filing.
+
+Two partial removals are worth noting:
+
+- **App Store commission.** The DMA content survives almost word for word, but
+  the description of the commission and the explicit risk of "reductions in the
+  rate of the commission … or if the rate of the commission is otherwise
+  narrowed in scope or eliminated" do not appear in Item 1A.
+- **Seasonality.** The single-product concentration risk moved into the
+  gross-margins paragraph, where "single product" became "single product
+  **category**". The sentence about higher first-quarter sales from holiday
+  demand is no longer in Item 1A.
+
+Both partial removals were checked only within Item 1A. The same language may
+have moved to another part of the 10-K.
+
+**Why the raw count was wrong.** Apple restructured Item 1A this year and
+combined several paragraphs into fewer, longer ones. The matcher pairs
+paragraphs one-to-one, so when three old paragraphs merge into one new
+paragraph, one of the three gets matched and the other two show up as
+removals, even though their text survives word for word. See "Merges are
+invisible to a one-to-one matcher" below.
+
+Full verdicts, with both versions of each paragraph:
+[`results/aapl_fy2025_verification.txt`](results/aapl_fy2025_verification.txt).
+
 ## Status
 
 - [x] EDGAR ingestion with rate limiting
@@ -17,7 +67,9 @@ It does not predict prices. It compresses reading.
 - [x] Paragraph-level semantic diff (added / removed / modified)
 - [x] Similarity metric selected by measurement against real filings, not assumption
 - [x] Thresholds tuned by sweep and cross-metric agreement
-- [ ] `min_chars` boundary asymmetry — known open bug, see Open questions
+- [x] `min_chars` tuned to 130 — boundary asymmetry resolved
+- [x] Removals verified by hand against source filings (AAPL FY2025)
+- [ ] Merge / split detection built into the diff itself
 - [ ] LLM summarisation of deltas, with citations to source text
 - [ ] RAG index across filings for cross-quarter questions
 - [ ] Weekly digest for my watchlist
@@ -53,6 +105,7 @@ project, not scaffolding:
 tune.py       threshold sweeps across all three similarity metrics
 agreement.py  do two metrics agree on the partition, or only on the counts?
 boundary.py   find paragraphs the length filter drops asymmetrically
+verify.py     check whether each "removed" paragraph survives elsewhere
 cost.py       token and dollar cost model for the summarisation layer
 diff.py       the original character-similarity version, kept as the baseline
 ```
@@ -172,11 +225,13 @@ not tokens.
 
 ## Open questions
 
-- **`min_chars` boundary asymmetry (open bug).** A fixed length cutoff is not
-  neutral: a filer adding three words can push a paragraph across it in one
-  filing but not the other. `boundary.py` detects these. Lowering the cutoff
-  readmits headings and page-number fragments, which generate their own false
-  diffs, so it needs its own sweep rather than an arbitrary value.
+- **Merge and split detection.** The removal count cannot be trusted until
+  the diff itself recognises many-to-one and one-to-many edits. `verify.py`
+  catches some of these after the fact. A global-containment check would catch
+  condensed and scattered content too.
+- **`MODIFIED_CEILING` per metric.** 0.97 was carried over from the token
+  metric. The two IDF-vs-token ceiling disagreements that went the other way
+  (investments; confidential information) have not been resolved.
 - **Embeddings.** The intro-paragraph case is the ceiling of lexical matching:
   two paragraphs recognisable as the same by *meaning* while sharing little
   vocabulary. Worth measuring against the current metric, keeping `diff.py` and
