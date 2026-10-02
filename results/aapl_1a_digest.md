@@ -8,20 +8,20 @@ Model `claude-haiku-4-5-20251001`, prompts: added v1, modified v1, removed v2. 6
 | PARTLY VERIFIED | 6 |
 | UNVERIFIED | 0 |
 
-Tokens: 68,736 in / 11,634 out. Full-run cost $0.1269; this run $0.0252 (54 from cache).
+Tokens: 68,736 in / 11,634 out. Full-run cost $0.1269; this run $0.0000 (63 from cache).
 
 **Removals.** The diff flagged 12 paragraphs as removed. 3 were skipped as merge artifacts (their text survives in a consolidated paragraph; see verify.py). The model judged the other 9 against the closest surviving text: 2 removed, 2 moved or reworded, 5 partly removed.
 
-**Against hand verification**, the model's removal verdict matched 4 of 9. Taking the diff's label at face value would have matched 4 of 9.
+**Against hand verification**, the model's removal verdict matched 7 of 9. Taking the diff's label at face value would have matched 4 of 9.
 
 | paragraph | hand | model | match |
 |---|---|---|---|
 | The Company distributes third-party applications for its pro… | partially_removed | partially_removed | ✓ |
 | The Company's retail operations are subject to many factors … | removed | removed | ✓ |
-| The Company relies on single-source outsourcing partners in … | moved_or_reworded | partially_removed | ✗ |
-| The Company has invested in manufacturing process equipment,… | moved_or_reworded | partially_removed | ✗ |
+| The Company relies on single-source outsourcing partners in … | partially_removed | partially_removed | ✓ |
+| The Company has invested in manufacturing process equipment,… | partially_removed | partially_removed | ✓ |
 | Some third-party digital content providers require the Compa… | removed | removed | ✓ |
-| Payment card data is also subject to additional requirements… | moved_or_reworded | partially_removed | ✗ |
+| Payment card data is also subject to additional requirements… | partially_removed | partially_removed | ✓ |
 | The Company has historically experienced higher net sales in… | partially_removed | partially_removed | ✓ |
 | Because of the following factors, as well as other factors a… | removed | moved_or_reworded | ✗ |
 | The Company's business, results of operations and financial … | removed | moved_or_reworded | ✗ |

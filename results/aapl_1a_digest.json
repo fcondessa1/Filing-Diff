@@ -426,7 +426,7 @@
   },
   "input_tokens": 1680,
   "output_tokens": 218,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
@@ -486,7 +486,7 @@
   },
   "input_tokens": 1709,
   "output_tokens": 189,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "added",
@@ -1974,7 +1974,7 @@
   },
   "input_tokens": 2103,
   "output_tokens": 279,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
@@ -2024,7 +2024,7 @@
   },
   "input_tokens": 2043,
   "output_tokens": 164,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
@@ -2074,7 +2074,7 @@
   },
   "input_tokens": 1908,
   "output_tokens": 177,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
@@ -2124,7 +2124,7 @@
   },
   "input_tokens": 1513,
   "output_tokens": 173,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
@@ -2184,7 +2184,7 @@
   },
   "input_tokens": 2106,
   "output_tokens": 197,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "added",
@@ -3053,7 +3053,7 @@
   },
   "input_tokens": 1416,
   "output_tokens": 164,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
@@ -3103,6 +3103,6 @@
   },
   "input_tokens": 2049,
   "output_tokens": 173,
-  "cached": false
+  "cached": true
  }
 ]
