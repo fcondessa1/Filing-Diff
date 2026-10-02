@@ -46,7 +46,7 @@ REMOVED (672 chars):
 CLOSEST TEXT IN NEW FILING (containment = 0.502 -- probably not the same risk, but read it before calling this a removal):
   In addition to the risks generally relating to the collection, use, retention, protection and transfer of personal data, the Company is also subject to specific obligations relating to the collection and processing of data associated with minors, as well as information considered sensitive under applicable laws, such as health, biometric, financial and payment card data. Health, biometric, financial and payment card data are subject to additional privacy, security and breach notification requirements, and the Company is subject to audit by governmental authorities regarding the Company’s compliance with these obligations. If the Company fails to adequately comply with these rules and requirements, the Company can be subject to litigation or government investigations, can be liable for associated investigatory expenses, and can incur significant fees or fines.
 
-  your verdict: MERGED	borderline, just under the 0.55 floor. COmbined with other topics of data privacy
+  your verdict: PARTIAL	borderline, just under the 0.55 floor. process payment cards - dropped
 
 --- 5. LIKELY REAL REMOVAL  (containment=0.471, host already paired) ---
 REMOVED (1703 chars):
@@ -68,7 +68,7 @@ REMOVED (783 chars):
 CLOSEST TEXT IN NEW FILING (containment only 0.367 ):
   A significant majority of the Company’s manufacturing is performed in whole or in part by outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, in addition to sourcing from partners and facilities located in the U.S. The Company relies on single-source partners in the U.S., Asia and Europe to supply and manufacture many components, and on partners primarily located in Asia, for final assembly of substantially all of the Company’s hardware products. The Company has also outsourced much of its transportation and logistics management. While these arrangements can lower operating costs, they also reduce the Company’s direct control over production and distribution. Such diminished control has from time to time had, and may in the future have, an adverse effect on the cost, quality or quantity of products manufactured or services provided, or adversely affect the Company’s flexibility to respond to changing conditions. Although arrangements with these partners may contain provisions for product defect expense reimbursement, the Company generally remains responsible to the consumer for warranty and out-of-warranty service in the event of product defects and experiences unanticipated product defect liabilities from time to time. While the Company relies on its partners to adhere to its supplier code of conduct, violations of the supplier code of conduct occur from time to time and can materially adversely affect the Company’s business, reputation, results of operations, financial condition and stock price.
 
-  your verdict: REWORDED
+  your verdict: PARTIAL - transit to final destinations dropped
 
 --- 7. LIKELY REAL REMOVAL  (containment=0.358, host already paired) ---
 REMOVED (372 chars):
@@ -104,7 +104,7 @@ REMOVED (577 chars):
 CLOSEST TEXT IN NEW FILING (containment only 0.308 -- probably not the same risk, but read it before calling this a removal):
   The Company distributes its products and certain of its services through third-party cellular network carriers and other resellers. The Company also sells its products and services directly to small and mid-sized businesses and education, enterprise and government customers. A substantial majority of the Company’s outstanding trade receivables are not covered by collateral, third-party bank support or financing arrangements, or credit insurance, and a significant portion of the Company’s trade receivables can be concentrated within cellular network carriers or other resellers. The Company’s exposure to credit and collectibility risk on its trade receivables is higher in certain international markets. The Company also has unsecured vendor non-trade receivables resulting from purchases of components by outsourcing partners and other vendors that manufacture subassemblies or assemble final products for the Company. In addition, the Company has made prepayments associated with long-term supply agreements to secure supply of inventory components. As of September 27, 2025, the Company’s vendor non-trade receivables were concentrated among a few individual vendors located primarily in Asia. If the Company is unable to monitor and limit exposure to credit risk on its trade and vendor non-trade receivables, as well as long-term prepayments, the Company’s results of operations, financial condition and stock price could be materially adversely affected.
 
-  your verdict: SCATTERED
+  your verdict: PARTIAL - recoverability dropped
 
 --- 11. LIKELY REAL REMOVAL  (containment=0.294, host already paired) ---
 REMOVED (609 chars):

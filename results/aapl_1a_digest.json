@@ -31,7 +31,8 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 776,
   "output_tokens": 152,
@@ -80,11 +81,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1725,
   "output_tokens": 263,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -119,11 +121,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 782,
   "output_tokens": 143,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -168,11 +171,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1184,
   "output_tokens": 212,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -207,11 +211,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 875,
   "output_tokens": 136,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -256,11 +261,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1140,
   "output_tokens": 216,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -305,11 +311,12 @@
      "found": false,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1105,
   "output_tokens": 216,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -354,182 +361,131 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1228,
   "output_tokens": 214,
-  "cached": false
- },
- {
-  "kind": "removed",
-  "old": "The Company relies on single-source outsourcing partners in the U.S., Asia and Europe to supply and manufacture many components, and on outsourcing partners primarily located in Asia, for final assembly of substantially all of the Company’s hardware products. Any failure of these partners to perform can have a negative impact on the Company’s cost or supply of components or finished goods. In addition, manufacturing or logistics in these locations or transit to final destinations can be disrupted for a variety of reasons, including natural and man-made disasters, information technology system failures, commercial disputes, economic, business, labor, environmental, public health or political issues, trade and other international disputes, geopolitical tensions, or conflict.",
-  "new": null,
-  "summary": "Removed risk disclosure about single-source outsourcing dependencies and potential supply chain disruption factors across U.S., Asia, and Europe.",
-  "materiality": "high",
-  "materiality_reason": "This removal eliminates disclosure of a material operational risk regarding supplier concentration and supply chain vulnerabilities that investors rely on to assess business continuity exposure.",
-  "evidence": [
-   {
-    "source": "old",
-    "quote": "The Company relies on single-source outsourcing partners in the U.S., Asia and Europe to supply and manufacture many components"
-   },
-   {
-    "source": "old",
-    "quote": "Any failure of these partners to perform can have a negative impact on the Company's cost or supply of components or finished goods"
-   }
-  ],
-  "check": {
-   "status": "VERIFIED",
-   "evidence": [
-    {
-     "source": "old",
-     "quote": "The Company relies on single-source outsourcing partners in the U.S., Asia and Europe to supply and manufacture many components",
-     "found": true,
-     "wrong_source": false
-    },
-    {
-     "source": "old",
-     "quote": "Any failure of these partners to perform can have a negative impact on the Company's cost or supply of components or finished goods",
-     "found": true,
-     "wrong_source": false
-    }
-   ]
-  },
-  "input_tokens": 815,
-  "output_tokens": 153,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
   "old": "The Company distributes third-party applications for its products through the App Store. For the vast majority of applications, developers keep all of the revenue they generate on the App Store. Where applicable, the Company retains a commission from sales of applications and sales of digital services or goods initiated within an application. From time to time, the Company has made changes to its products and services, including taking actions in response to litigation, competition, market conditions and legal and regulatory requirements, and expects to make further business changes in the future. For example, in the U.S., the Company has implemented changes to how developers communicate with consumers within apps on the U.S. storefront of the iOS and iPadOS App Store regarding alternative purchasing mechanisms. The Company has also implemented changes to iOS, iPadOS, the App Store and Safari\n®\n in the European Union (“EU”) as it seeks to comply with the Digital Markets Act (the “DMA”), including new business terms and alternative fee structures for iOS and iPadOS apps, alternative methods of distribution for iOS and iPadOS apps, alternative payment processing for apps across the Company’s operating systems, and additional tools and application programming interfaces (“APIs”) for developers. Changes to the Company’s products and services could materially adversely affect the Company’s business, results of operations and financial condition, including if such business changes result in reduced App Store or other sales, reductions in the rate of the commission that the Company retains on such sales, or if the rate of the commission is otherwise narrowed in scope or eliminated.",
   "new": null,
-  "summary": "Apple removed a risk factor disclosing how changes to App Store policies in response to litigation, competition, and regulatory requirements (particularly the DMA in the EU) could materially adversely affect its business, commission rates, and financial condition.",
-  "materiality": "high",
-  "materiality_reason": "This removal eliminates disclosure of a significant regulatory and competitive risk that directly impacts App Store revenue and profitability, which are material to investor understanding of Apple's business model.",
+  "candidates": [
+   {
+    "text": "Globally, several jurisdictions have adopted, or may in the future adopt, competition-related laws and regulations imposing wide-ranging obligations on technology companies and significant limitations on businesses, including the Company. For example, the Company has implemented changes to iOS, iPadOS, the App Store and Safari\n®\n in the EU as it seeks to comply with the Digital Markets Act (“DMA”), including new business terms and alternative fee structures for iOS and iPadOS apps, alternative methods of distribution for iOS and iPadOS apps, alternative payment processing for apps across the Company’s operating systems, and additional tools and application programming interfaces for developers. The Company has also continued to make changes to its compliance plan in response to feedback and engagement with the Commission. Although the Company’s compliance plan is intended to address the DMA’s obligations, it has been challenged by the Commission and may be challenged further by private litigants. The DMA provides for significant fines and penalties for noncompliance. While the changes introduced by the Company in the EU are intended to reduce new privacy and security risks that the DMA poses to EU users, many risks will remain. Changes to the Company’s business in response to the DMA or other laws and regulations could materially adversely affect the Company’s business, reputation, results of operations, financial condition and stock price.",
+    "containment": 0.471
+   },
+   {
+    "text": "From time to time, the Company has made changes to its business, including actions taken in response to litigation, competition, market conditions and legal and regulatory requirements. The Company expects to make further business changes in the future. For example, in the U.S., the Company has implemented changes to how developers communicate with consumers within apps on the U.S. storefront of the iOS and iPadOS App Store regarding alternative purchasing mechanisms and is currently subject to a court order preventing it from imposing any commission or fee on certain purchases that consumers make.",
+    "containment": 0.365
+   }
+  ],
   "evidence": [
    {
     "source": "old",
-    "quote": "Changes to the Company's products and services could materially adversely affect the Company's business, results of operations and financial condition"
+    "quote": "the Company retains a commission from sales of applications and sales of digital services or goods"
    },
    {
     "source": "old",
-    "quote": "the Company has implemented changes to iOS, iPadOS, the App Store and Safari in the European Union as it seeks to comply with the Digital Markets Act"
+    "quote": "reductions in the rate of the commission that the Company retains on such sales, or if the rate of the commission is otherwise narrowed"
+   },
+   {
+    "source": "new",
+    "quote": "is currently subject to a court order preventing it from imposing any commission or fee on certain purchases"
    }
   ],
+  "verdict": "partially_removed",
+  "summary": "The disclosure about App Store commission structure and risks was substantially reframed; the specific risk that commission reductions could materially harm the business was removed, replaced by a factual statement about a U.S. court order.",
+  "materiality": "high",
+  "materiality_reason": "The loss of explicit disclosure that reduced commissions could materially affect financial performance is material because App Store commissions are a significant revenue source and investors need to understand financial risks from regulatory changes.",
   "check": {
-   "status": "PARTIAL",
+   "status": "VERIFIED",
    "evidence": [
     {
      "source": "old",
-     "quote": "Changes to the Company's products and services could materially adversely affect the Company's business, results of operations and financial condition",
+     "quote": "the Company retains a commission from sales of applications and sales of digital services or goods",
      "found": true,
      "wrong_source": false
     },
     {
      "source": "old",
-     "quote": "the Company has implemented changes to iOS, iPadOS, the App Store and Safari in the European Union as it seeks to comply with the Digital Markets Act",
-     "found": false,
+     "quote": "reductions in the rate of the commission that the Company retains on such sales, or if the rate of the commission is otherwise narrowed",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "new",
+     "quote": "is currently subject to a court order preventing it from imposing any commission or fee on certain purchases",
+     "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": true
   },
-  "input_tokens": 992,
+  "input_tokens": 1680,
+  "output_tokens": 218,
+  "cached": false
+ },
+ {
+  "kind": "removed",
+  "old": "The Company’s retail operations are subject to many factors that pose risks and uncertainties and could adversely impact the Company’s business, results of operations and financial condition, including macroeconomic factors that could have an adverse effect on general retail activity. Other factors include the Company’s ability to: manage costs associated with retail store construction and operation; manage relationships with existing retail partners; manage costs associated with fluctuations in the value of retail inventory; and obtain and renew leases in quality retail locations at a reasonable cost.",
+  "new": null,
+  "candidates": [
+   {
+    "text": "The Company’s gross margins vary significantly across its products, services, geographic segments and distribution channels and can change over time. The Company’s net sales and gross margins are subject to volatility and downward pressure due to a variety of factors, including: continued industry-wide global product pricing pressures and product pricing actions that the Company may take in response to such pressures; increased competition; the Company’s ability to effectively stimulate demand for certain of its products and services; compressed product life cycles; supply shortages; potential increases in the cost of components, outside manufacturing services, and developing, acquiring and delivering content for the Company’s services; the Company’s ability to manage product quality and warranty costs effectively; shifts in the mix of products and services, or in the geographic, currency or channel mix, including to the extent that regulatory changes require the Company to modify its product and service offerings; fluctuations in foreign exchange rates; inflation and other macroeconomic pressures; the imposition of new or increased tariffs and other trade restrictions, their overall magnitude and duration, and retaliatory actions in response; and the introduction of new products or services, including new products or services with lower profit margins. These and other factors could have a materially adverse impact on the Company’s results of operations, financial condition and stock price. Further, the Company generates a significant portion of its net sales from a single product category and a decline in demand for that product could significantly impact net sales and gross margins.",
+    "containment": 0.294
+   },
+   {
+    "text": "Due to the highly volatile and competitive nature of the markets and industries in which the Company competes, the Company must continually introduce new products, services and technologies, enhance existing products and services, effectively stimulate customer demand for new and upgraded products and services, navigate global regulatory requirements and barriers to market access, and successfully manage the transition to these new and upgraded products and services. The success of new product and service introductions depends on a number of factors, including the Company’s ability to recruit and retain highly skilled personnel to execute on its strategic initiatives, and the timely and successful development and market acceptance of new products, services and technologies. Success also relies on the Company’s ability to manage the risks associated with new technologies and production ramp-up issues, the effective integration of third-party services and technologies into the Company’s products and services, the availability, delivery and performance of application software or other third-party support for the Company’s products and services, the effective management of manufacturing and other purchase commitments and the management of inventory levels in line with anticipated product demand, and the availability of products in appropriate quantities and at expected costs to meet anticipated demand. Additionally, quality issues or other defects or deficiencies can adversely affect the success of new product and service introductions and market acceptance. New products, services and technologies may replace or supersede existing offerings and may produce lower revenues and lower profit margins. The Company may not be able to successfully manage future introductions and transitions of products and services, which can materially adversely affect the Company’s business, reputation, results of operations, financial condition and stock price.",
+    "containment": 0.273
+   }
+  ],
+  "evidence": [
+   {
+    "source": "old",
+    "quote": "manage costs associated with retail store construction and operation; manage relationships with existing retail partners"
+   },
+   {
+    "source": "old",
+    "quote": "manage costs associated with fluctuations in the value of retail inventory; and obtain and renew leases in quality retail locations"
+   },
+   {
+    "source": "old",
+    "quote": "macroeconomic factors that could have an adverse effect on general retail activity"
+   }
+  ],
+  "verdict": "removed",
+  "summary": "The specific risks related to retail operations, including store construction and operation costs, retail partner relationships, inventory management, and lease renewal, are no longer disclosed.",
+  "materiality": "high",
+  "materiality_reason": "Investors need visibility into operational challenges specific to retail, a distinct business channel with unique cost and partnership risks that differ materially from general pricing and supply chain pressures.",
+  "check": {
+   "status": "VERIFIED",
+   "evidence": [
+    {
+     "source": "old",
+     "quote": "manage costs associated with retail store construction and operation; manage relationships with existing retail partners",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "old",
+     "quote": "manage costs associated with fluctuations in the value of retail inventory; and obtain and renew leases in quality retail locations",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "old",
+     "quote": "macroeconomic factors that could have an adverse effect on general retail activity",
+     "found": true,
+     "wrong_source": false
+    }
+   ],
+   "verdict_supported": true
+  },
+  "input_tokens": 1709,
   "output_tokens": 189,
-  "cached": false
- },
- {
-  "kind": "removed",
-  "old": "Payment card data is also subject to additional requirements. Under payment card rules and obligations, if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines if the Company fails to follow payment card industry data security standards. The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition.",
-  "new": null,
-  "summary": "Removed risk disclosure regarding payment card data security liabilities, including potential investigatory expenses, fines, transaction cost increases, and loss of payment processing ability.",
-  "materiality": "high",
-  "materiality_reason": "The company eliminated disclosure of a material risk that could result in significant financial penalties, increased operating costs, or loss of payment processing capabilities, all of which could adversely affect business operations.",
-  "evidence": [
-   {
-    "source": "old",
-    "quote": "if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines"
-   },
-   {
-    "source": "old",
-    "quote": "could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards"
-   },
-   {
-    "source": "old",
-    "quote": "could materially adversely affect the Company's business, reputation, results of operations and financial condition"
-   }
-  ],
-  "check": {
-   "status": "VERIFIED",
-   "evidence": [
-    {
-     "source": "old",
-     "quote": "if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines",
-     "found": true,
-     "wrong_source": false
-    },
-    {
-     "source": "old",
-     "quote": "could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards",
-     "found": true,
-     "wrong_source": false
-    },
-    {
-     "source": "old",
-     "quote": "could materially adversely affect the Company's business, reputation, results of operations and financial condition",
-     "found": true,
-     "wrong_source": false
-    }
-   ]
-  },
-  "input_tokens": 785,
-  "output_tokens": 192,
-  "cached": false
- },
- {
-  "kind": "removed",
-  "old": "The Company has historically experienced higher net sales in its first quarter compared to other quarters in its fiscal year due in part to seasonal holiday demand. Additionally, new product and service introductions can significantly impact net sales, cost of sales and operating expenses. Further, the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales. The Company could also be subject to unexpected developments, such as lower-than-anticipated demand for the Company’s products or services, issues with new product or service introductions, information technology system failures or network disruptions, or failure of one of the Company’s logistics, supply or manufacturing partners.",
-  "new": null,
-  "summary": "Removed a risk factor disclosing seasonal variations in sales, dependence on a single product, and vulnerability to unexpected developments affecting demand and operations.",
-  "materiality": "high",
-  "materiality_reason": "Eliminating disclosure of material risks including heavy reliance on a single product for significant net sales and seasonal demand patterns removes important information investors use to assess earnings predictability and revenue concentration risk.",
-  "evidence": [
-   {
-    "source": "old",
-    "quote": "the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales"
-   },
-   {
-    "source": "old",
-    "quote": "The Company has historically experienced higher net sales in its first quarter compared to other quarters in its fiscal year due in part to seasonal holiday demand"
-   },
-   {
-    "source": "old",
-    "quote": "The Company could also be subject to unexpected developments, such as lower-than-anticipated demand for the Company's products or services"
-   }
-  ],
-  "check": {
-   "status": "VERIFIED",
-   "evidence": [
-    {
-     "source": "old",
-     "quote": "the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales",
-     "found": true,
-     "wrong_source": false
-    },
-    {
-     "source": "old",
-     "quote": "The Company has historically experienced higher net sales in its first quarter compared to other quarters in its fiscal year due in part to seasonal holiday demand",
-     "found": true,
-     "wrong_source": false
-    },
-    {
-     "source": "old",
-     "quote": "The Company could also be subject to unexpected developments, such as lower-than-anticipated demand for the Company's products or services",
-     "found": true,
-     "wrong_source": false
-    }
-   ]
-  },
-  "input_tokens": 810,
-  "output_tokens": 209,
   "cached": false
  },
  {
@@ -574,7 +530,8 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 788,
   "output_tokens": 165,
@@ -622,7 +579,8 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 748,
   "output_tokens": 183,
@@ -671,11 +629,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1041,
   "output_tokens": 213,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -720,11 +679,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1251,
   "output_tokens": 178,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -789,11 +749,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1221,
   "output_tokens": 328,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -838,11 +799,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1022,
   "output_tokens": 178,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -887,11 +849,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1047,
   "output_tokens": 255,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -936,11 +899,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 856,
   "output_tokens": 174,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -985,11 +949,12 @@
      "found": false,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1027,
   "output_tokens": 220,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1034,11 +999,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 784,
   "output_tokens": 183,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1083,11 +1049,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 933,
   "output_tokens": 169,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1142,11 +1109,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 881,
   "output_tokens": 206,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1191,11 +1159,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1102,
   "output_tokens": 154,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1250,11 +1219,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 974,
   "output_tokens": 206,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1299,11 +1269,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 934,
   "output_tokens": 190,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1368,11 +1339,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1034,
   "output_tokens": 252,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1417,11 +1389,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 990,
   "output_tokens": 139,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1466,11 +1439,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1093,
   "output_tokens": 217,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1515,11 +1489,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 953,
   "output_tokens": 195,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1554,11 +1529,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 751,
   "output_tokens": 136,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1613,11 +1589,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1176,
   "output_tokens": 228,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1672,11 +1649,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1068,
   "output_tokens": 194,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1721,11 +1699,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 940,
   "output_tokens": 174,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1770,11 +1749,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 902,
   "output_tokens": 218,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1819,11 +1799,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 987,
   "output_tokens": 204,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1858,11 +1839,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 918,
   "output_tokens": 142,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -1927,94 +1909,281 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1249,
   "output_tokens": 290,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
-  "old": "The Company’s business, results of operations and financial condition depend substantially on the Company’s ability to continually improve its products and services to maintain their functional and design advantages. There can be no assurance the Company will be able to continue to provide products and services that compete effectively.",
+  "old": "The Company relies on single-source outsourcing partners in the U.S., Asia and Europe to supply and manufacture many components, and on outsourcing partners primarily located in Asia, for final assembly of substantially all of the Company’s hardware products. Any failure of these partners to perform can have a negative impact on the Company’s cost or supply of components or finished goods. In addition, manufacturing or logistics in these locations or transit to final destinations can be disrupted for a variety of reasons, including natural and man-made disasters, information technology system failures, commercial disputes, economic, business, labor, environmental, public health or political issues, trade and other international disputes, geopolitical tensions, or conflict.",
   "new": null,
-  "summary": "Removed risk language about the company's ability to continually improve products and maintain competitive advantages.",
-  "materiality": "medium",
-  "materiality_reason": "Dropping explicit acknowledgment of competitive product development risks could signal confidence but reduces transparency about ongoing execution challenges investors monitor.",
+  "candidates": [
+   {
+    "text": "A significant majority of the Company’s manufacturing is performed in whole or in part by outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, in addition to sourcing from partners and facilities located in the U.S. The Company relies on single-source partners in the U.S., Asia and Europe to supply and manufacture many components, and on partners primarily located in Asia, for final assembly of substantially all of the Company’s hardware products. The Company has also outsourced much of its transportation and logistics management. While these arrangements can lower operating costs, they also reduce the Company’s direct control over production and distribution. Such diminished control has from time to time had, and may in the future have, an adverse effect on the cost, quality or quantity of products manufactured or services provided, or adversely affect the Company’s flexibility to respond to changing conditions. Although arrangements with these partners may contain provisions for product defect expense reimbursement, the Company generally remains responsible to the consumer for warranty and out-of-warranty service in the event of product defects and experiences unanticipated product defect liabilities from time to time. While the Company relies on its partners to adhere to its supplier code of conduct, violations of the supplier code of conduct occur from time to time and can materially adversely affect the Company’s business, reputation, results of operations, financial condition and stock price.",
+    "containment": 0.367
+   },
+   {
+    "text": "The Company has a large, global business with sales outside the U.S. representing a majority of the Company’s total net sales, and the Company believes that it generally benefits from growth in international trade. A significant majority of the Company’s manufacturing is performed in whole or in part by outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, in addition to sourcing from partners and facilities located in the U.S. Restrictions on international trade, such as tariffs and other controls on imports or exports of goods, technology or data, can materially adversely affect the Company’s business and supply chain. The impact can be particularly significant if these restrictive measures apply to countries and regions where the Company derives a significant portion of its revenues and/or has significant supply chain operations. Restrictive measures can increase the cost or limit the availability of the Company’s products and the components and rare earths and other raw materials that go into them. Restrictive measures can also require the Company to change suppliers, restructure business relationships and operations, refrain from offering and distributing or cease to offer and distribute affected products, services and third-party applications to its customers, and increase the prices of its products and services. Changing the Company’s business and supply chain in accordance with new or changed restrictions on international trade can be expensive, time-consuming and disruptive to the Company’s business and results of operations. Trade and other international disputes can also have an adverse impact on the overall macroeconomic environment and result in shifts and reductions in consumer spending and negative consumer sentiment for the Company’s products and services, all of which can further adversely affect the Company’s business and results of operations. Such restrictions can be announced with little or no advance notice, which can create uncertainty, and the Company may not be able to effectively mitigate any or all adverse impacts from such measures. Global supply chains can be highly concentrated, and an escalation of geopolitical tensions or conflict could result in significant disruptions. Beginning in the second quarter of 2025, new tariffs were announced on imports to the U.S. (“U.S. Tariffs”), including additional tariffs on imports from China, India, Japan, South Korea, Taiwan, Vietnam and the European Union (“EU”), among others. In response, several countries have imposed, or threatened to impose, reciprocal tariffs on imports from the U.S. and other retaliatory measures. Various modifications to the U.S. Tariffs have been announced and further changes could be made in the future, which may include additional sector-based tariffs or other measures. For example, the U.S. Department of Commerce has initiated an investigation under Section 232 of the Trade Expansion Act of 1962, as amended, into, among other things, imports of semiconductors, semiconductor manufacturing equipment, and their derivative products, including downstream products that contain semiconductors. The ultimate impact remains uncertain and will depend on several factors, including whether additional or incremental U.S. Tariffs or other measures are announced or imposed, to what extent other countries implement tariffs or other retaliatory measures in response, and the overall magnitude and duration of these measures. If disputes and conflicts further escalate, actions by governments in response could be significantly more severe and restrictive.",
+    "containment": 0.326
+   }
+  ],
   "evidence": [
    {
     "source": "old",
-    "quote": "The Company's business, results of operations and financial condition depend substantially on the Company's ability to continually improve its products and services"
+    "quote": "Any failure of these partners to perform can have a negative impact on the Company's cost or supply"
+   },
+   {
+    "source": "old",
+    "quote": "manufacturing or logistics in these locations or transit to final destinations can be disrupted for a variety of reasons, including natural and man-made disasters, information technology system failures, commercial disputes, economic, business, labor, environmental, public health or political issues, trade and other international disputes, geopolitical tensions, or conflict"
+   },
+   {
+    "source": "new",
+    "quote": "While these arrangements can lower operating costs, they also reduce the Company's direct control over production and distribution. Such diminished control has from time to time had, and may in the future have, an adverse effect on the cost, quality or quantity of products manufactured"
    }
   ],
+  "verdict": "partially_removed",
+  "summary": "The disclosure of supply and manufacturing disruption risks from natural disasters, IT failures, commercial disputes, and environmental/labor/political issues was removed; only general control and quality risks remain.",
+  "materiality": "medium",
+  "materiality_reason": "Investors lose visibility into specific operational disruption scenarios beyond the generic control-loss risk, though candidate 2 addresses geopolitical disruptions separately under tariffs and trade disputes.",
   "check": {
    "status": "VERIFIED",
    "evidence": [
     {
      "source": "old",
-     "quote": "The Company's business, results of operations and financial condition depend substantially on the Company's ability to continually improve its products and services",
+     "quote": "Any failure of these partners to perform can have a negative impact on the Company's cost or supply",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "old",
+     "quote": "manufacturing or logistics in these locations or transit to final destinations can be disrupted for a variety of reasons, including natural and man-made disasters, information technology system failures, commercial disputes, economic, business, labor, environmental, public health or political issues, trade and other international disputes, geopolitical tensions, or conflict",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "new",
+     "quote": "While these arrangements can lower operating costs, they also reduce the Company's direct control over production and distribution. Such diminished control has from time to time had, and may in the future have, an adverse effect on the cost, quality or quantity of products manufactured",
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": true
   },
-  "input_tokens": 727,
-  "output_tokens": 106,
+  "input_tokens": 2103,
+  "output_tokens": 279,
   "cached": false
  },
  {
   "kind": "removed",
   "old": "The Company has invested in manufacturing process equipment, much of which is held at certain of its outsourcing partners, and has made prepayments to certain of its suppliers associated with long-term supply agreements. While these arrangements help ensure the supply of components and finished goods, if these outsourcing partners or suppliers experience severe financial problems or other disruptions in their business, such continued supply can be disrupted or terminated, and the recoverability of manufacturing process equipment or prepayments can be negatively impacted.",
   "new": null,
-  "summary": "Removed disclosure about risks from manufacturing equipment investments and supplier prepayments at outsourcing partners.",
-  "materiality": "medium",
-  "materiality_reason": "The company eliminated discussion of a specific operational vulnerability regarding supply chain disruption and asset recoverability, which investors track for early warning signs of manufacturing or financial risk.",
+  "candidates": [
+   {
+    "text": "The Company distributes its products and certain of its services through third-party cellular network carriers and other resellers. The Company also sells its products and services directly to small and mid-sized businesses and education, enterprise and government customers. A substantial majority of the Company’s outstanding trade receivables are not covered by collateral, third-party bank support or financing arrangements, or credit insurance, and a significant portion of the Company’s trade receivables can be concentrated within cellular network carriers or other resellers. The Company’s exposure to credit and collectibility risk on its trade receivables is higher in certain international markets. The Company also has unsecured vendor non-trade receivables resulting from purchases of components by outsourcing partners and other vendors that manufacture subassemblies or assemble final products for the Company. In addition, the Company has made prepayments associated with long-term supply agreements to secure supply of inventory components. As of September 27, 2025, the Company’s vendor non-trade receivables were concentrated among a few individual vendors located primarily in Asia. If the Company is unable to monitor and limit exposure to credit risk on its trade and vendor non-trade receivables, as well as long-term prepayments, the Company’s results of operations, financial condition and stock price could be materially adversely affected.",
+    "containment": 0.308
+   },
+   {
+    "text": "The Company has a large, global business with sales outside the U.S. representing a majority of the Company’s total net sales, and the Company believes that it generally benefits from growth in international trade. A significant majority of the Company’s manufacturing is performed in whole or in part by outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, in addition to sourcing from partners and facilities located in the U.S. Restrictions on international trade, such as tariffs and other controls on imports or exports of goods, technology or data, can materially adversely affect the Company’s business and supply chain. The impact can be particularly significant if these restrictive measures apply to countries and regions where the Company derives a significant portion of its revenues and/or has significant supply chain operations. Restrictive measures can increase the cost or limit the availability of the Company’s products and the components and rare earths and other raw materials that go into them. Restrictive measures can also require the Company to change suppliers, restructure business relationships and operations, refrain from offering and distributing or cease to offer and distribute affected products, services and third-party applications to its customers, and increase the prices of its products and services. Changing the Company’s business and supply chain in accordance with new or changed restrictions on international trade can be expensive, time-consuming and disruptive to the Company’s business and results of operations. Trade and other international disputes can also have an adverse impact on the overall macroeconomic environment and result in shifts and reductions in consumer spending and negative consumer sentiment for the Company’s products and services, all of which can further adversely affect the Company’s business and results of operations. Such restrictions can be announced with little or no advance notice, which can create uncertainty, and the Company may not be able to effectively mitigate any or all adverse impacts from such measures. Global supply chains can be highly concentrated, and an escalation of geopolitical tensions or conflict could result in significant disruptions. Beginning in the second quarter of 2025, new tariffs were announced on imports to the U.S. (“U.S. Tariffs”), including additional tariffs on imports from China, India, Japan, South Korea, Taiwan, Vietnam and the European Union (“EU”), among others. In response, several countries have imposed, or threatened to impose, reciprocal tariffs on imports from the U.S. and other retaliatory measures. Various modifications to the U.S. Tariffs have been announced and further changes could be made in the future, which may include additional sector-based tariffs or other measures. For example, the U.S. Department of Commerce has initiated an investigation under Section 232 of the Trade Expansion Act of 1962, as amended, into, among other things, imports of semiconductors, semiconductor manufacturing equipment, and their derivative products, including downstream products that contain semiconductors. The ultimate impact remains uncertain and will depend on several factors, including whether additional or incremental U.S. Tariffs or other measures are announced or imposed, to what extent other countries implement tariffs or other retaliatory measures in response, and the overall magnitude and duration of these measures. If disputes and conflicts further escalate, actions by governments in response could be significantly more severe and restrictive.",
+    "containment": 0.29
+   }
+  ],
   "evidence": [
    {
     "source": "old",
     "quote": "The Company has invested in manufacturing process equipment, much of which is held at certain of its outsourcing partners"
+   },
+   {
+    "source": "new",
+    "quote": "The Company has made prepayments associated with long-term supply agreements to secure supply of inventory components"
    }
   ],
+  "verdict": "partially_removed",
+  "summary": "The risk of recoverability loss on manufacturing process equipment held at outsourcing partners was removed; only the prepayment risk survives.",
+  "materiality": "medium",
+  "materiality_reason": "Investors lose visibility into a specific asset category (manufacturing equipment at outsourcers) and the disruption risks unique to that arrangement, though prepayment risk remains disclosed.",
   "check": {
-   "status": "VERIFIED",
+   "status": "PARTIAL",
    "evidence": [
     {
      "source": "old",
      "quote": "The Company has invested in manufacturing process equipment, much of which is held at certain of its outsourcing partners",
      "found": true,
      "wrong_source": false
+    },
+    {
+     "source": "new",
+     "quote": "The Company has made prepayments associated with long-term supply agreements to secure supply of inventory components",
+     "found": false,
+     "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": false
   },
-  "input_tokens": 776,
-  "output_tokens": 113,
+  "input_tokens": 2043,
+  "output_tokens": 164,
   "cached": false
  },
  {
   "kind": "removed",
-  "old": "The Company’s retail operations are subject to many factors that pose risks and uncertainties and could adversely impact the Company’s business, results of operations and financial condition, including macroeconomic factors that could have an adverse effect on general retail activity. Other factors include the Company’s ability to: manage costs associated with retail store construction and operation; manage relationships with existing retail partners; manage costs associated with fluctuations in the value of retail inventory; and obtain and renew leases in quality retail locations at a reasonable cost.",
+  "old": "Some third-party digital content providers require the Company to provide digital rights management and other security solutions. If requirements change, the Company may have to develop or license new technology to provide these solutions. There can be no assurance the Company will be able to develop or license such solutions at a reasonable cost and in a timely manner.",
   "new": null,
-  "summary": "The company removed a risk factor describing challenges in managing retail operations, costs, and lease negotiations.",
-  "materiality": "medium",
-  "materiality_reason": "An investor tracking retail operational risks would notice the elimination of specific concerns about construction costs, partner relationships, inventory management, and lease renewals.",
+  "candidates": [
+   {
+    "text": "The Company contracts with numerous third parties to offer their digital content to customers. This includes the right to sell, or offer subscriptions to, third-party content, as well as the right to incorporate specific content into the Company’s own services. The licensing or other distribution arrangements for this content can be for relatively short time periods and do not guarantee the continuation or renewal of these arrangements on commercially reasonable terms, or at all. Some third-party content providers and distributors currently or in the future may offer competing products and services, and can take actions to make it difficult or impossible for the Company to license or otherwise distribute their content. Other content owners, providers or distributors may seek to limit the Company’s access to, or increase the cost of, such content. The Company may be unable to continue to offer a wide variety of content at commercially reasonable prices with acceptable usage rules.",
+    "containment": 0.358
+   },
+   {
+    "text": "The Company has a large, global business with sales outside the U.S. representing a majority of the Company’s total net sales, and the Company believes that it generally benefits from growth in international trade. A significant majority of the Company’s manufacturing is performed in whole or in part by outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, in addition to sourcing from partners and facilities located in the U.S. Restrictions on international trade, such as tariffs and other controls on imports or exports of goods, technology or data, can materially adversely affect the Company’s business and supply chain. The impact can be particularly significant if these restrictive measures apply to countries and regions where the Company derives a significant portion of its revenues and/or has significant supply chain operations. Restrictive measures can increase the cost or limit the availability of the Company’s products and the components and rare earths and other raw materials that go into them. Restrictive measures can also require the Company to change suppliers, restructure business relationships and operations, refrain from offering and distributing or cease to offer and distribute affected products, services and third-party applications to its customers, and increase the prices of its products and services. Changing the Company’s business and supply chain in accordance with new or changed restrictions on international trade can be expensive, time-consuming and disruptive to the Company’s business and results of operations. Trade and other international disputes can also have an adverse impact on the overall macroeconomic environment and result in shifts and reductions in consumer spending and negative consumer sentiment for the Company’s products and services, all of which can further adversely affect the Company’s business and results of operations. Such restrictions can be announced with little or no advance notice, which can create uncertainty, and the Company may not be able to effectively mitigate any or all adverse impacts from such measures. Global supply chains can be highly concentrated, and an escalation of geopolitical tensions or conflict could result in significant disruptions. Beginning in the second quarter of 2025, new tariffs were announced on imports to the U.S. (“U.S. Tariffs”), including additional tariffs on imports from China, India, Japan, South Korea, Taiwan, Vietnam and the European Union (“EU”), among others. In response, several countries have imposed, or threatened to impose, reciprocal tariffs on imports from the U.S. and other retaliatory measures. Various modifications to the U.S. Tariffs have been announced and further changes could be made in the future, which may include additional sector-based tariffs or other measures. For example, the U.S. Department of Commerce has initiated an investigation under Section 232 of the Trade Expansion Act of 1962, as amended, into, among other things, imports of semiconductors, semiconductor manufacturing equipment, and their derivative products, including downstream products that contain semiconductors. The ultimate impact remains uncertain and will depend on several factors, including whether additional or incremental U.S. Tariffs or other measures are announced or imposed, to what extent other countries implement tariffs or other retaliatory measures in response, and the overall magnitude and duration of these measures. If disputes and conflicts further escalate, actions by governments in response could be significantly more severe and restrictive.",
+    "containment": 0.273
+   }
+  ],
   "evidence": [
    {
     "source": "old",
-    "quote": "The Company's retail operations are subject to many factors that pose risks and uncertainties and could adversely impact"
+    "quote": "Some third-party digital content providers require the Company to provide digital rights management and other security solutions."
+   },
+   {
+    "source": "new",
+    "quote": "The Company contracts with numerous third parties to offer their digital content to customers. This includes the right to sell, or offer subscriptions to, third-party content"
    }
   ],
+  "verdict": "removed",
+  "summary": "The disclosure about third-party digital content providers requiring DRM and security solutions, and risks of developing or licensing such solutions at reasonable cost and timely manner, has been removed.",
+  "materiality": "medium",
+  "materiality_reason": "This risk addresses specific technological and financial barriers to meeting third-party requirements for content protection, which could affect the Company's ability to offer digital content services competitively.",
   "check": {
    "status": "VERIFIED",
    "evidence": [
     {
      "source": "old",
-     "quote": "The Company's retail operations are subject to many factors that pose risks and uncertainties and could adversely impact",
+     "quote": "Some third-party digital content providers require the Company to provide digital rights management and other security solutions.",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "new",
+     "quote": "The Company contracts with numerous third parties to offer their digital content to customers. This includes the right to sell, or offer subscriptions to, third-party content",
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": true
   },
-  "input_tokens": 777,
-  "output_tokens": 106,
+  "input_tokens": 1908,
+  "output_tokens": 177,
+  "cached": false
+ },
+ {
+  "kind": "removed",
+  "old": "Payment card data is also subject to additional requirements. Under payment card rules and obligations, if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines if the Company fails to follow payment card industry data security standards. The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition.",
+  "new": null,
+  "candidates": [
+   {
+    "text": "In addition to the risks generally relating to the collection, use, retention, protection and transfer of personal data, the Company is also subject to specific obligations relating to the collection and processing of data associated with minors, as well as information considered sensitive under applicable laws, such as health, biometric, financial and payment card data. Health, biometric, financial and payment card data are subject to additional privacy, security and breach notification requirements, and the Company is subject to audit by governmental authorities regarding the Company’s compliance with these obligations. If the Company fails to adequately comply with these rules and requirements, the Company can be subject to litigation or government investigations, can be liable for associated investigatory expenses, and can incur significant fees or fines.",
+    "containment": 0.502
+   },
+   {
+    "text": "Globally, several jurisdictions have adopted, or may in the future adopt, competition-related laws and regulations imposing wide-ranging obligations on technology companies and significant limitations on businesses, including the Company. For example, the Company has implemented changes to iOS, iPadOS, the App Store and Safari\n®\n in the EU as it seeks to comply with the Digital Markets Act (“DMA”), including new business terms and alternative fee structures for iOS and iPadOS apps, alternative methods of distribution for iOS and iPadOS apps, alternative payment processing for apps across the Company’s operating systems, and additional tools and application programming interfaces for developers. The Company has also continued to make changes to its compliance plan in response to feedback and engagement with the Commission. Although the Company’s compliance plan is intended to address the DMA’s obligations, it has been challenged by the Commission and may be challenged further by private litigants. The DMA provides for significant fines and penalties for noncompliance. While the changes introduced by the Company in the EU are intended to reduce new privacy and security risks that the DMA poses to EU users, many risks will remain. Changes to the Company’s business in response to the DMA or other laws and regulations could materially adversely affect the Company’s business, reputation, results of operations, financial condition and stock price.",
+    "containment": 0.216
+   }
+  ],
+  "evidence": [
+   {
+    "source": "old",
+    "quote": "if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines"
+   },
+   {
+    "source": "new",
+    "quote": "can be liable for associated investigatory expenses, and can incur significant fees or fines"
+   }
+  ],
+  "verdict": "partially_removed",
+  "summary": "The disclosure of payment card processing cost increases and loss of payment processing ability following non-compliance with PCI standards was removed; only investigatory expenses and fines remain.",
+  "materiality": "medium",
+  "materiality_reason": "Loss of payment card processing capability or significant cost increases would directly harm revenue and operations, making their omission from disclosure material to investors evaluating business continuity risks.",
+  "check": {
+   "status": "VERIFIED",
+   "evidence": [
+    {
+     "source": "old",
+     "quote": "if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "new",
+     "quote": "can be liable for associated investigatory expenses, and can incur significant fees or fines",
+     "found": true,
+     "wrong_source": false
+    }
+   ],
+   "verdict_supported": true
+  },
+  "input_tokens": 1513,
+  "output_tokens": 173,
+  "cached": false
+ },
+ {
+  "kind": "removed",
+  "old": "The Company has historically experienced higher net sales in its first quarter compared to other quarters in its fiscal year due in part to seasonal holiday demand. Additionally, new product and service introductions can significantly impact net sales, cost of sales and operating expenses. Further, the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales. The Company could also be subject to unexpected developments, such as lower-than-anticipated demand for the Company’s products or services, issues with new product or service introductions, information technology system failures or network disruptions, or failure of one of the Company’s logistics, supply or manufacturing partners.",
+  "new": null,
+  "candidates": [
+   {
+    "text": "The Company’s gross margins vary significantly across its products, services, geographic segments and distribution channels and can change over time. The Company’s net sales and gross margins are subject to volatility and downward pressure due to a variety of factors, including: continued industry-wide global product pricing pressures and product pricing actions that the Company may take in response to such pressures; increased competition; the Company’s ability to effectively stimulate demand for certain of its products and services; compressed product life cycles; supply shortages; potential increases in the cost of components, outside manufacturing services, and developing, acquiring and delivering content for the Company’s services; the Company’s ability to manage product quality and warranty costs effectively; shifts in the mix of products and services, or in the geographic, currency or channel mix, including to the extent that regulatory changes require the Company to modify its product and service offerings; fluctuations in foreign exchange rates; inflation and other macroeconomic pressures; the imposition of new or increased tariffs and other trade restrictions, their overall magnitude and duration, and retaliatory actions in response; and the introduction of new products or services, including new products or services with lower profit margins. These and other factors could have a materially adverse impact on the Company’s results of operations, financial condition and stock price. Further, the Company generates a significant portion of its net sales from a single product category and a decline in demand for that product could significantly impact net sales and gross margins.",
+    "containment": 0.313
+   },
+   {
+    "text": "The Company has a large, global business with sales outside the U.S. representing a majority of the Company’s total net sales, and the Company believes that it generally benefits from growth in international trade. A significant majority of the Company’s manufacturing is performed in whole or in part by outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, in addition to sourcing from partners and facilities located in the U.S. Restrictions on international trade, such as tariffs and other controls on imports or exports of goods, technology or data, can materially adversely affect the Company’s business and supply chain. The impact can be particularly significant if these restrictive measures apply to countries and regions where the Company derives a significant portion of its revenues and/or has significant supply chain operations. Restrictive measures can increase the cost or limit the availability of the Company’s products and the components and rare earths and other raw materials that go into them. Restrictive measures can also require the Company to change suppliers, restructure business relationships and operations, refrain from offering and distributing or cease to offer and distribute affected products, services and third-party applications to its customers, and increase the prices of its products and services. Changing the Company’s business and supply chain in accordance with new or changed restrictions on international trade can be expensive, time-consuming and disruptive to the Company’s business and results of operations. Trade and other international disputes can also have an adverse impact on the overall macroeconomic environment and result in shifts and reductions in consumer spending and negative consumer sentiment for the Company’s products and services, all of which can further adversely affect the Company’s business and results of operations. Such restrictions can be announced with little or no advance notice, which can create uncertainty, and the Company may not be able to effectively mitigate any or all adverse impacts from such measures. Global supply chains can be highly concentrated, and an escalation of geopolitical tensions or conflict could result in significant disruptions. Beginning in the second quarter of 2025, new tariffs were announced on imports to the U.S. (“U.S. Tariffs”), including additional tariffs on imports from China, India, Japan, South Korea, Taiwan, Vietnam and the European Union (“EU”), among others. In response, several countries have imposed, or threatened to impose, reciprocal tariffs on imports from the U.S. and other retaliatory measures. Various modifications to the U.S. Tariffs have been announced and further changes could be made in the future, which may include additional sector-based tariffs or other measures. For example, the U.S. Department of Commerce has initiated an investigation under Section 232 of the Trade Expansion Act of 1962, as amended, into, among other things, imports of semiconductors, semiconductor manufacturing equipment, and their derivative products, including downstream products that contain semiconductors. The ultimate impact remains uncertain and will depend on several factors, including whether additional or incremental U.S. Tariffs or other measures are announced or imposed, to what extent other countries implement tariffs or other retaliatory measures in response, and the overall magnitude and duration of these measures. If disputes and conflicts further escalate, actions by governments in response could be significantly more severe and restrictive.",
+    "containment": 0.263
+   }
+  ],
+  "evidence": [
+   {
+    "source": "old",
+    "quote": "new product and service introductions can significantly impact net sales, cost of sales and operating expenses"
+   },
+   {
+    "source": "new",
+    "quote": "introduction of new products or services, including new products or services with lower profit margins"
+   },
+   {
+    "source": "old",
+    "quote": "the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales"
+   }
+  ],
+  "verdict": "partially_removed",
+  "summary": "The disclosure about seasonal holiday demand in Q1, unexpected developments like IT system failures, and logistics partner failures was removed; only the single-product concentration and new product introduction risks were retained.",
+  "materiality": "medium",
+  "materiality_reason": "Loss of seasonal demand disclosure and operational risk factors reduces visibility into demand volatility sources and business continuity vulnerabilities that investors should consider.",
+  "check": {
+   "status": "VERIFIED",
+   "evidence": [
+    {
+     "source": "old",
+     "quote": "new product and service introductions can significantly impact net sales, cost of sales and operating expenses",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "new",
+     "quote": "introduction of new products or services, including new products or services with lower profit margins",
+     "found": true,
+     "wrong_source": false
+    },
+    {
+     "source": "old",
+     "quote": "the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales",
+     "found": true,
+     "wrong_source": false
+    }
+   ],
+   "verdict_supported": true
+  },
+  "input_tokens": 2106,
+  "output_tokens": 197,
   "cached": false
  },
  {
@@ -2039,7 +2208,8 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 800,
   "output_tokens": 117,
@@ -2078,11 +2248,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 750,
   "output_tokens": 139,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2117,11 +2288,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 825,
   "output_tokens": 152,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2156,11 +2328,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 965,
   "output_tokens": 151,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2205,11 +2378,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 890,
   "output_tokens": 184,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2244,11 +2418,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 832,
   "output_tokens": 152,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2283,11 +2458,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 744,
   "output_tokens": 161,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2342,11 +2518,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1003,
   "output_tokens": 246,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2391,11 +2568,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 882,
   "output_tokens": 156,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2430,11 +2608,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 895,
   "output_tokens": 180,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2469,11 +2648,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 839,
   "output_tokens": 132,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2508,11 +2688,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 830,
   "output_tokens": 144,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2567,11 +2748,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1052,
   "output_tokens": 174,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2606,11 +2788,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 1089,
   "output_tokens": 166,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2645,11 +2828,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 765,
   "output_tokens": 122,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2684,11 +2868,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 906,
   "output_tokens": 127,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2723,11 +2908,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 740,
   "output_tokens": 160,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2762,11 +2948,12 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 983,
   "output_tokens": 129,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "modified",
@@ -2811,29 +2998,41 @@
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": null
   },
   "input_tokens": 934,
   "output_tokens": 165,
-  "cached": false
+  "cached": true
  },
  {
   "kind": "removed",
   "old": "Because of the following factors, as well as other factors affecting the Company’s results of operations and financial condition, past financial performance should not be considered to be a reliable indicator of future performance, and investors should not use historical trends to anticipate results or trends in future periods. This discussion of risk factors contains forward-looking statements.",
   "new": null,
-  "summary": "Removed the opening disclaimer that past financial performance should not be considered a reliable indicator of future performance and that historical trends should not be used to anticipate results.",
-  "materiality": "low",
-  "materiality_reason": "This is standard boilerplate cautionary language found in most risk factor sections and does not reflect a change in actual business risks.",
+  "candidates": [
+   {
+    "text": "The following summarizes factors that could have a material adverse effect on the Company’s business, reputation, results of operations, financial condition and stock price. The Company may not be able to accurately predict, control or mitigate these risks. Statements in this section are based on the Company’s beliefs and opinions regarding matters that could materially adversely affect the Company in the future and are not representations as to whether such matters have or have not occurred previously. The risks and uncertainties described below are not exhaustive and should not be considered a complete statement of all potential risks or uncertainties that the Company faces or may face in the future.",
+    "containment": 0.231
+   },
+   {
+    "text": "Various stakeholders, including governments, regulators, investors, employees, customers and others, have differing expectations about a wide range of social and other issues related to the Company’s business. The Company makes statements about its values, including the environmental and societal impact of its business, through various reports, information provided on the Company’s website, and in press statements and other communications. The Company also pursues environmental and other goals and initiatives that involve risks and uncertainties, require investments, and depend in part on third-party performance or data that is outside the Company’s control, and the Company may not be able to fully achieve all of its goals and initiatives. Efforts by the Company to advance its business and values, or achieve its goals and further its initiatives, or to align with stakeholders’ expectations, or comply with evolving, varied and at times conflicting federal, state and international laws, executive orders, regulations and standards, or any failure or perceived failure to do so, can result in adverse reactions by consumers and other stakeholders, including the commencement of legal and regulatory proceedings against the Company, and can materially adversely affect the Company’s business, reputation, results of operations, financial condition and stock price.",
+    "containment": 0.167
+   }
+  ],
   "evidence": [
    {
     "source": "old",
     "quote": "past financial performance should not be considered to be a reliable indicator of future performance"
    },
    {
-    "source": "old",
-    "quote": "investors should not use historical trends to anticipate results or trends in future periods"
+    "source": "new",
+    "quote": "The risks and uncertainties described below are not exhaustive and should not be considered a complete statement"
    }
   ],
+  "verdict": "moved_or_reworded",
+  "summary": "The cautionary statement about past performance not being indicative of future results was reworded into a broader disclaimer about the incompleteness of risk disclosures.",
+  "materiality": "low",
+  "materiality_reason": "Both versions convey similar forward-looking statement cautions; the reworded version maintains the essential message that investors should not rely on historical indicators or assume complete risk disclosure.",
   "check": {
    "status": "VERIFIED",
    "evidence": [
@@ -2844,53 +3043,66 @@
      "wrong_source": false
     },
     {
-     "source": "old",
-     "quote": "investors should not use historical trends to anticipate results or trends in future periods",
+     "source": "new",
+     "quote": "The risks and uncertainties described below are not exhaustive and should not be considered a complete statement",
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": true
   },
-  "input_tokens": 737,
-  "output_tokens": 136,
-  "cached": true
+  "input_tokens": 1416,
+  "output_tokens": 164,
+  "cached": false
  },
  {
   "kind": "removed",
-  "old": "Some third-party digital content providers require the Company to provide digital rights management and other security solutions. If requirements change, the Company may have to develop or license new technology to provide these solutions. There can be no assurance the Company will be able to develop or license such solutions at a reasonable cost and in a timely manner.",
+  "old": "The Company’s business, results of operations and financial condition depend substantially on the Company’s ability to continually improve its products and services to maintain their functional and design advantages. There can be no assurance the Company will be able to continue to provide products and services that compete effectively.",
   "new": null,
-  "summary": "Removed disclosure about third-party digital content provider requirements for digital rights management and security solutions.",
-  "materiality": "low",
-  "materiality_reason": "This was a niche operational risk specific to digital content providers that did not appear to be a material business concern.",
+  "candidates": [
+   {
+    "text": "Due to the highly volatile and competitive nature of the markets and industries in which the Company competes, the Company must continually introduce new products, services and technologies, enhance existing products and services, effectively stimulate customer demand for new and upgraded products and services, navigate global regulatory requirements and barriers to market access, and successfully manage the transition to these new and upgraded products and services. The success of new product and service introductions depends on a number of factors, including the Company’s ability to recruit and retain highly skilled personnel to execute on its strategic initiatives, and the timely and successful development and market acceptance of new products, services and technologies. Success also relies on the Company’s ability to manage the risks associated with new technologies and production ramp-up issues, the effective integration of third-party services and technologies into the Company’s products and services, the availability, delivery and performance of application software or other third-party support for the Company’s products and services, the effective management of manufacturing and other purchase commitments and the management of inventory levels in line with anticipated product demand, and the availability of products in appropriate quantities and at expected costs to meet anticipated demand. Additionally, quality issues or other defects or deficiencies can adversely affect the success of new product and service introductions and market acceptance. New products, services and technologies may replace or supersede existing offerings and may produce lower revenues and lower profit margins. The Company may not be able to successfully manage future introductions and transitions of products and services, which can materially adversely affect the Company’s business, reputation, results of operations, financial condition and stock price.",
+    "containment": 0.323
+   },
+   {
+    "text": "The Company has a large, global business with sales outside the U.S. representing a majority of the Company’s total net sales, and the Company believes that it generally benefits from growth in international trade. A significant majority of the Company’s manufacturing is performed in whole or in part by outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, in addition to sourcing from partners and facilities located in the U.S. Restrictions on international trade, such as tariffs and other controls on imports or exports of goods, technology or data, can materially adversely affect the Company’s business and supply chain. The impact can be particularly significant if these restrictive measures apply to countries and regions where the Company derives a significant portion of its revenues and/or has significant supply chain operations. Restrictive measures can increase the cost or limit the availability of the Company’s products and the components and rare earths and other raw materials that go into them. Restrictive measures can also require the Company to change suppliers, restructure business relationships and operations, refrain from offering and distributing or cease to offer and distribute affected products, services and third-party applications to its customers, and increase the prices of its products and services. Changing the Company’s business and supply chain in accordance with new or changed restrictions on international trade can be expensive, time-consuming and disruptive to the Company’s business and results of operations. Trade and other international disputes can also have an adverse impact on the overall macroeconomic environment and result in shifts and reductions in consumer spending and negative consumer sentiment for the Company’s products and services, all of which can further adversely affect the Company’s business and results of operations. Such restrictions can be announced with little or no advance notice, which can create uncertainty, and the Company may not be able to effectively mitigate any or all adverse impacts from such measures. Global supply chains can be highly concentrated, and an escalation of geopolitical tensions or conflict could result in significant disruptions. Beginning in the second quarter of 2025, new tariffs were announced on imports to the U.S. (“U.S. Tariffs”), including additional tariffs on imports from China, India, Japan, South Korea, Taiwan, Vietnam and the European Union (“EU”), among others. In response, several countries have imposed, or threatened to impose, reciprocal tariffs on imports from the U.S. and other retaliatory measures. Various modifications to the U.S. Tariffs have been announced and further changes could be made in the future, which may include additional sector-based tariffs or other measures. For example, the U.S. Department of Commerce has initiated an investigation under Section 232 of the Trade Expansion Act of 1962, as amended, into, among other things, imports of semiconductors, semiconductor manufacturing equipment, and their derivative products, including downstream products that contain semiconductors. The ultimate impact remains uncertain and will depend on several factors, including whether additional or incremental U.S. Tariffs or other measures are announced or imposed, to what extent other countries implement tariffs or other retaliatory measures in response, and the overall magnitude and duration of these measures. If disputes and conflicts further escalate, actions by governments in response could be significantly more severe and restrictive.",
+    "containment": 0.235
+   }
+  ],
   "evidence": [
    {
     "source": "old",
-    "quote": "Some third-party digital content providers require the Company to provide digital rights management and other security solutions."
+    "quote": "The Company's business, results of operations and financial condition depend substantially on the Company's ability to continually improve its products and services"
    },
    {
-    "source": "old",
-    "quote": "There can be no assurance the Company will be able to develop or license such solutions at a reasonable cost and in a timely manner."
+    "source": "new",
+    "quote": "the Company must continually introduce new products, services and technologies, enhance existing products and services"
    }
   ],
+  "verdict": "moved_or_reworded",
+  "summary": "The risk about continually improving products to maintain competitive advantages was reworded and moved into Candidate 1's discussion of product and service introductions and market competition.",
+  "materiality": "low",
+  "materiality_reason": "The substance of needing continuous product improvement to compete effectively survives, though the new disclosure focuses more on execution risks and less on maintaining functional and design advantages specifically.",
   "check": {
    "status": "VERIFIED",
    "evidence": [
     {
      "source": "old",
-     "quote": "Some third-party digital content providers require the Company to provide digital rights management and other security solutions.",
+     "quote": "The Company's business, results of operations and financial condition depend substantially on the Company's ability to continually improve its products and services",
      "found": true,
      "wrong_source": false
     },
     {
-     "source": "old",
-     "quote": "There can be no assurance the Company will be able to develop or license such solutions at a reasonable cost and in a timely manner.",
+     "source": "new",
+     "quote": "the Company must continually introduce new products, services and technologies, enhance existing products and services",
      "found": true,
      "wrong_source": false
     }
-   ]
+   ],
+   "verdict_supported": true
   },
-  "input_tokens": 738,
-  "output_tokens": 138,
+  "input_tokens": 2049,
+  "output_tokens": 173,
   "cached": false
  }
 ]

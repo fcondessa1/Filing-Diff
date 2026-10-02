@@ -219,7 +219,26 @@ so the failure rate stays visible. Comparison ignores typography (curly vs
 straight quotes, non-breaking spaces) but not wording.
 
 Removed paragraphs that `verify.py` identifies as merge artifacts are skipped,
-so the summariser does not restate the diff's own mistake. Responses are cached
+so the summariser does not restate the diff's own mistake.
+
+**Quote checks catch invented quotes, not wrong conclusions.** On the first
+full run, 57 of 63 summaries verified. But five of the twelve rated
+high-materiality were wrong, and four of those were contradicted by other
+entries in the same digest. The diff labelled paragraphs as REMOVED that Apple
+had merged or reworded; the model, shown only the old paragraph, accurately
+quoted it and wrote a confident summary of a removal that had not happened.
+For example, the digest reported the single-source supplier risk as removed
+(high materiality, verified), while another entry quoted the same risk from
+the new filing.
+
+**Fix: removals are judged, not trusted.** Each removed paragraph is now sent
+with the two paragraphs in the new filing that contain most of its content.
+The model must decide whether the risk was removed, moved or reworded, or
+partially removed, and a "still disclosed" verdict must quote the new filing.
+That quote is checked like any other, so the model cannot claim the text
+survived without showing where. Its verdicts are scored against the hand
+verification above. Taking the diff's REMOVED label at face value agrees with
+the hand verdict for 4 of the 9 judged paragraphs. Responses are cached
 on disk by model, prompt version and change text, so re-runs only pay for new
 changes.
 
@@ -276,8 +295,3 @@ not tokens.
 
 ## Limitations
 
-This is an information-summarisation tool, not investment advice. Disclosure
-changes are one input among many, LLM summaries can misrepresent source text,
-and the thresholds are validated against a single filer. Every summary should
-link back to the underlying filing text so claims can be checked against the
-original.

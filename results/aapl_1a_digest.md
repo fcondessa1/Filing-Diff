@@ -1,6 +1,6 @@
 # AAPL Item 1A: what changed
 
-Model `claude-haiku-4-5-20251001`, prompt v1. 63 changes summarised.
+Model `claude-haiku-4-5-20251001`, prompts: added v1, modified v1, removed v2. 63 changes summarised.
 
 | check | count |
 |---|---|
@@ -8,11 +8,25 @@ Model `claude-haiku-4-5-20251001`, prompt v1. 63 changes summarised.
 | PARTLY VERIFIED | 6 |
 | UNVERIFIED | 0 |
 
-Tokens: 59,366 in / 11,242 out. Full-run cost $0.1156; this run $0.1080 (5 from cache).
+Tokens: 68,736 in / 11,634 out. Full-run cost $0.1269; this run $0.0252 (54 from cache).
 
-3 removed paragraph(s) skipped as likely merge artifacts (their text survives in a consolidated paragraph; see verify.py).
+**Removals.** The diff flagged 12 paragraphs as removed. 3 were skipped as merge artifacts (their text survives in a consolidated paragraph; see verify.py). The model judged the other 9 against the closest surviving text: 2 removed, 2 moved or reworded, 5 partly removed.
 
-## High materiality (12)
+**Against hand verification**, the model's removal verdict matched 4 of 9. Taking the diff's label at face value would have matched 4 of 9.
+
+| paragraph | hand | model | match |
+|---|---|---|---|
+| The Company distributes third-party applications for its pro… | partially_removed | partially_removed | ✓ |
+| The Company's retail operations are subject to many factors … | removed | removed | ✓ |
+| The Company relies on single-source outsourcing partners in … | moved_or_reworded | partially_removed | ✗ |
+| The Company has invested in manufacturing process equipment,… | moved_or_reworded | partially_removed | ✗ |
+| Some third-party digital content providers require the Compa… | removed | removed | ✓ |
+| Payment card data is also subject to additional requirements… | moved_or_reworded | partially_removed | ✗ |
+| The Company has historically experienced higher net sales in… | partially_removed | partially_removed | ✓ |
+| Because of the following factors, as well as other factors a… | removed | moved_or_reworded | ✗ |
+| The Company's business, results of operations and financial … | removed | moved_or_reworded | ✗ |
+
+## High materiality (10)
 
 - **ADDED** Added new risk factor regarding compliance with evolving online safety laws, particularly those protecting minors and requiring age verification.
   - *Why it matters:* The company identifies a new category of regulatory risk that could require significant product modifications, increase operational costs, and result in material liability.
@@ -59,29 +73,19 @@ Tokens: 59,366 in / 11,242 out. Full-run cost $0.1156; this run $0.1080 (5 from 
   - ✓ (new) "the Company generates a significant portion of its net sales from a single product category and a decline in demand for that product could significantly impact net sales and gross margins"
   - ✓ (new) "The Company's net sales and gross margins are subject to volatility and downward pressure"
 
-- **REMOVED** Removed risk disclosure about single-source outsourcing dependencies and potential supply chain disruption factors across U.S., Asia, and Europe.
-  - *Why it matters:* This removal eliminates disclosure of a material operational risk regarding supplier concentration and supply chain vulnerabilities that investors rely on to assess business continuity exposure.
-  - ✓ (old) "The Company relies on single-source outsourcing partners in the U.S., Asia and Europe to supply and manufacture many components"
-  - ✓ (old) "Any failure of these partners to perform can have a negative impact on the Company's cost or supply of components or finished goods"
+- **PARTLY REMOVED** The disclosure about App Store commission structure and risks was substantially reframed; the specific risk that commission reductions could materially harm the business was removed, replaced by a factual statement about a U.S. court order.
+  - *Why it matters:* The loss of explicit disclosure that reduced commissions could materially affect financial performance is material because App Store commissions are a significant revenue source and investors need to understand financial risks from regulatory changes.
+  - ✓ (old) "the Company retains a commission from sales of applications and sales of digital services or goods"
+  - ✓ (old) "reductions in the rate of the commission that the Company retains on such sales, or if the rate of the commission is otherwise narrowed"
+  - ✓ (new) "is currently subject to a court order preventing it from imposing any commission or fee on certain purchases"
 
-- **REMOVED** **[PARTLY VERIFIED]** Apple removed a risk factor disclosing how changes to App Store policies in response to litigation, competition, and regulatory requirements (particularly the DMA in the EU) could materially adversely affect its business, commission rates, and financial condition.
-  - *Why it matters:* This removal eliminates disclosure of a significant regulatory and competitive risk that directly impacts App Store revenue and profitability, which are material to investor understanding of Apple's business model.
-  - ✓ (old) "Changes to the Company's products and services could materially adversely affect the Company's business, results of operations and financial condition"
-  - ✗ not found (old) "the Company has implemented changes to iOS, iPadOS, the App Store and Safari in the European Union as it seeks to comply with the Digital Markets Act"
+- **REMOVED** The specific risks related to retail operations, including store construction and operation costs, retail partner relationships, inventory management, and lease renewal, are no longer disclosed.
+  - *Why it matters:* Investors need visibility into operational challenges specific to retail, a distinct business channel with unique cost and partnership risks that differ materially from general pricing and supply chain pressures.
+  - ✓ (old) "manage costs associated with retail store construction and operation; manage relationships with existing retail partners"
+  - ✓ (old) "manage costs associated with fluctuations in the value of retail inventory; and obtain and renew leases in quality retail locations"
+  - ✓ (old) "macroeconomic factors that could have an adverse effect on general retail activity"
 
-- **REMOVED** Removed risk disclosure regarding payment card data security liabilities, including potential investigatory expenses, fines, transaction cost increases, and loss of payment processing ability.
-  - *Why it matters:* The company eliminated disclosure of a material risk that could result in significant financial penalties, increased operating costs, or loss of payment processing capabilities, all of which could adversely affect business operations.
-  - ✓ (old) "if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines"
-  - ✓ (old) "could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards"
-  - ✓ (old) "could materially adversely affect the Company's business, reputation, results of operations and financial condition"
-
-- **REMOVED** Removed a risk factor disclosing seasonal variations in sales, dependence on a single product, and vulnerability to unexpected developments affecting demand and operations.
-  - *Why it matters:* Eliminating disclosure of material risks including heavy reliance on a single product for significant net sales and seasonal demand patterns removes important information investors use to assess earnings predictability and revenue concentration risk.
-  - ✓ (old) "the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales"
-  - ✓ (old) "The Company has historically experienced higher net sales in its first quarter compared to other quarters in its fiscal year due in part to seasonal holiday demand"
-  - ✓ (old) "The Company could also be subject to unexpected developments, such as lower-than-anticipated demand for the Company's products or services"
-
-## Medium materiality (30)
+## Medium materiality (32)
 
 - **ADDED** Added risk disclosure that regulatory requirements, government investigations, and litigation could force product/service modifications and require sharing innovations with competitors, materially harming competitive advantage.
   - *Why it matters:* Investors care about IP protection and competitive advantages, but this articulates a known category of risk rather than introducing a new specific threat.
@@ -253,17 +257,32 @@ Tokens: 59,366 in / 11,242 out. Full-run cost $0.1156; this run $0.1080 (5 from 
   - ✓ (new) "If the Company is unable to monitor and limit exposure to credit risk on its trade and vendor non-trade receivables, as well as long-term prepayments, the Company's results of operations, financial condition and stock price could be materially adversely affected"
   - ✓ (old) "vendor non-trade receivables and prepayments related to long-term supply agreements were concentrated among a few individual vendors"
 
-- **REMOVED** Removed risk language about the company's ability to continually improve products and maintain competitive advantages.
-  - *Why it matters:* Dropping explicit acknowledgment of competitive product development risks could signal confidence but reduces transparency about ongoing execution challenges investors monitor.
-  - ✓ (old) "The Company's business, results of operations and financial condition depend substantially on the Company's ability to continually improve its products and services"
+- **PARTLY REMOVED** The disclosure of supply and manufacturing disruption risks from natural disasters, IT failures, commercial disputes, and environmental/labor/political issues was removed; only general control and quality risks remain.
+  - *Why it matters:* Investors lose visibility into specific operational disruption scenarios beyond the generic control-loss risk, though candidate 2 addresses geopolitical disruptions separately under tariffs and trade disputes.
+  - ✓ (old) "Any failure of these partners to perform can have a negative impact on the Company's cost or supply"
+  - ✓ (old) "manufacturing or logistics in these locations or transit to final destinations can be disrupted for a variety of reasons, including natural and man-made disasters, information technology system failures, commercial disputes, economic, business, labor, environmental, public health or political issues, trade and other international disputes, geopolitical tensions, or conflict"
+  - ✓ (new) "While these arrangements can lower operating costs, they also reduce the Company's direct control over production and distribution. Such diminished control has from time to time had, and may in the future have, an adverse effect on the cost, quality or quantity of products manufactured"
 
-- **REMOVED** Removed disclosure about risks from manufacturing equipment investments and supplier prepayments at outsourcing partners.
-  - *Why it matters:* The company eliminated discussion of a specific operational vulnerability regarding supply chain disruption and asset recoverability, which investors track for early warning signs of manufacturing or financial risk.
+- **PARTLY REMOVED** **[PARTLY VERIFIED]** **[VERDICT UNSUPPORTED: no quote from the new filing found]** The risk of recoverability loss on manufacturing process equipment held at outsourcing partners was removed; only the prepayment risk survives.
+  - *Why it matters:* Investors lose visibility into a specific asset category (manufacturing equipment at outsourcers) and the disruption risks unique to that arrangement, though prepayment risk remains disclosed.
   - ✓ (old) "The Company has invested in manufacturing process equipment, much of which is held at certain of its outsourcing partners"
+  - ✗ not found (new) "The Company has made prepayments associated with long-term supply agreements to secure supply of inventory components"
 
-- **REMOVED** The company removed a risk factor describing challenges in managing retail operations, costs, and lease negotiations.
-  - *Why it matters:* An investor tracking retail operational risks would notice the elimination of specific concerns about construction costs, partner relationships, inventory management, and lease renewals.
-  - ✓ (old) "The Company's retail operations are subject to many factors that pose risks and uncertainties and could adversely impact"
+- **REMOVED** The disclosure about third-party digital content providers requiring DRM and security solutions, and risks of developing or licensing such solutions at reasonable cost and timely manner, has been removed.
+  - *Why it matters:* This risk addresses specific technological and financial barriers to meeting third-party requirements for content protection, which could affect the Company's ability to offer digital content services competitively.
+  - ✓ (old) "Some third-party digital content providers require the Company to provide digital rights management and other security solutions."
+  - ✓ (new) "The Company contracts with numerous third parties to offer their digital content to customers. This includes the right to sell, or offer subscriptions to, third-party content"
+
+- **PARTLY REMOVED** The disclosure of payment card processing cost increases and loss of payment processing ability following non-compliance with PCI standards was removed; only investigatory expenses and fines remain.
+  - *Why it matters:* Loss of payment card processing capability or significant cost increases would directly harm revenue and operations, making their omission from disclosure material to investors evaluating business continuity risks.
+  - ✓ (old) "if cardholder information is potentially compromised, the Company can be liable for associated investigatory expenses and can also incur significant fees or fines"
+  - ✓ (new) "can be liable for associated investigatory expenses, and can incur significant fees or fines"
+
+- **PARTLY REMOVED** The disclosure about seasonal holiday demand in Q1, unexpected developments like IT system failures, and logistics partner failures was removed; only the single-product concentration and new product introduction risks were retained.
+  - *Why it matters:* Loss of seasonal demand disclosure and operational risk factors reduces visibility into demand volatility sources and business continuity vulnerabilities that investors should consider.
+  - ✓ (old) "new product and service introductions can significantly impact net sales, cost of sales and operating expenses"
+  - ✓ (new) "introduction of new products or services, including new products or services with lower profit margins"
+  - ✓ (old) "the Company generates a significant portion of its net sales from a single product and a decline in demand for that product could significantly impact quarterly net sales"
 
 ## Low materiality (21)
 
@@ -368,12 +387,12 @@ Tokens: 59,366 in / 11,242 out. Full-run cost $0.1156; this run $0.1080 (5 from 
   - ✓ (new) "The outcome of such examinations is inherently uncertain."
   - ✓ (new) "results of operations, financial condition and stock price could be materially adversely affected."
 
-- **REMOVED** Removed the opening disclaimer that past financial performance should not be considered a reliable indicator of future performance and that historical trends should not be used to anticipate results.
-  - *Why it matters:* This is standard boilerplate cautionary language found in most risk factor sections and does not reflect a change in actual business risks.
+- **NOT REMOVED (moved or reworded)** The cautionary statement about past performance not being indicative of future results was reworded into a broader disclaimer about the incompleteness of risk disclosures.
+  - *Why it matters:* Both versions convey similar forward-looking statement cautions; the reworded version maintains the essential message that investors should not rely on historical indicators or assume complete risk disclosure.
   - ✓ (old) "past financial performance should not be considered to be a reliable indicator of future performance"
-  - ✓ (old) "investors should not use historical trends to anticipate results or trends in future periods"
+  - ✓ (new) "The risks and uncertainties described below are not exhaustive and should not be considered a complete statement"
 
-- **REMOVED** Removed disclosure about third-party digital content provider requirements for digital rights management and security solutions.
-  - *Why it matters:* This was a niche operational risk specific to digital content providers that did not appear to be a material business concern.
-  - ✓ (old) "Some third-party digital content providers require the Company to provide digital rights management and other security solutions."
-  - ✓ (old) "There can be no assurance the Company will be able to develop or license such solutions at a reasonable cost and in a timely manner."
+- **NOT REMOVED (moved or reworded)** The risk about continually improving products to maintain competitive advantages was reworded and moved into Candidate 1's discussion of product and service introductions and market competition.
+  - *Why it matters:* The substance of needing continuous product improvement to compete effectively survives, though the new disclosure focuses more on execution risks and less on maintaining functional and design advantages specifically.
+  - ✓ (old) "The Company's business, results of operations and financial condition depend substantially on the Company's ability to continually improve its products and services"
+  - ✓ (new) "the Company must continually introduce new products, services and technologies, enhance existing products and services"
