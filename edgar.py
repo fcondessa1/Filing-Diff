@@ -9,7 +9,6 @@ EDGAR is free and has no API key, but it DOES enforce two rules:
 import time
 import requests
 
-# CHANGE THIS. EDGAR will 403 you otherwise.
 import os
 USER_AGENT = os.environ.get("EDGAR_USER_AGENT", "Your Name your.email@example.com")
 

@@ -70,7 +70,7 @@ Full verdicts, with both versions of each paragraph:
 - [x] `min_chars` tuned to 130 — boundary asymmetry resolved
 - [x] Removals verified by hand against source filings (AAPL FY2025)
 - [ ] Merge / split detection built into the diff itself
-- [ ] LLM summarisation of deltas, with citations to source text
+- [x] LLM summarisation of deltas, with every quote checked against the source text
 - [ ] RAG index across filings for cross-quarter questions
 - [ ] Weekly digest for my watchlist
 
@@ -88,6 +88,15 @@ python edgar.py             # smoke test: lists AAPL's recent filings
 python run_diff.py AAPL 1A  # diff the two most recent 10-K Risk Factors
 ```
 
+For LLM summaries, set an Anthropic API key in your environment (never in
+the code):
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+python summarise.py AAPL 1A --limit 5   # cheap first run
+python summarise.py AAPL 1A             # writes results/aapl_1a_digest.md
+```
+
 ## Architecture
 
 ```
@@ -96,6 +105,7 @@ sections.py   HTML -> plain text -> {Item 1A, Item 7}
 idf.py        corpus-derived term weights used by the production metric
 diff2.py      two versions of an Item -> added / removed / modified
 run_diff.py   CLI tying the above together
+summarise.py  Claude explains each change; code verifies every quote it gives
 ```
 
 Diagnostics — these produced the design decisions below and are part of the
@@ -189,6 +199,29 @@ impossible choice. The cause was upstream: the supply-shortage paragraph is
 **197 characters** in FY2024 and **210** in FY2025 (Apple added "and stock
 price"), straddling the `min_chars=200` filter. The old version was dropped, so
 the new one had no true counterpart and each metric guessed differently.
+
+## LLM summaries and grounding
+
+`summarise.py` sends each change to Claude (Haiku 4.5 by default) with
+structured output: a one-sentence summary, a materiality rating, and 1–3
+quotes copied from the filing as evidence. The model's word is not taken for
+the quotes. The code checks each one verbatim against the filing it was
+attributed to:
+
+| status | meaning |
+|---|---|
+| VERIFIED | every quote appears in the stated filing |
+| PARTIAL | some quotes found, some not |
+| UNSUPPORTED | no quote found, or a quote attributed to the wrong filing |
+
+Unverified summaries stay in the digest, flagged, rather than being dropped,
+so the failure rate stays visible. Comparison ignores typography (curly vs
+straight quotes, non-breaking spaces) but not wording.
+
+Removed paragraphs that `verify.py` identifies as merge artifacts are skipped,
+so the summariser does not restate the diff's own mistake. Responses are cached
+on disk by model, prompt version and change text, so re-runs only pay for new
+changes.
 
 ## Threshold provenance
 
