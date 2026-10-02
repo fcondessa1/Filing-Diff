@@ -19,12 +19,15 @@ Every flagged removal was checked by hand against both filings.
 
 | verdict | count |
 |---|---|
-| Merged into a consolidated paragraph | 4 |
-| Scattered across several new paragraphs | 1 |
-| Reworded, still disclosed | 1 |
-| Partially removed (specific language dropped) | 2 |
+| Merged into a consolidated paragraph, nothing lost | 3 |
+| Partially removed (specific language dropped) | 5 |
 | Removed — boilerplate / summary sentence | 2 |
 | **Removed — material risk** | **2** |
+
+Three of the five partial removals were first marked by hand as merged,
+reworded or scattered. The LLM step (below) judged them partial and named
+what was missing; searching the FY2025 10-K confirmed the missing language
+appears nowhere in the filing, and the hand verdicts were corrected.
 
 The material removals:
 
@@ -36,7 +39,7 @@ The material removals:
   or license. The closest surviving text is about content licensing terms, a
   separate risk that was already in the FY2024 filing.
 
-Two partial removals are worth noting:
+The partial removals, and what was dropped:
 
 - **App Store commission.** The DMA content survives almost word for word, but
   the description of the commission and the explicit risk of "reductions in the
@@ -46,9 +49,21 @@ Two partial removals are worth noting:
   gross-margins paragraph, where "single product" became "single product
   **category**". The sentence about higher first-quarter sales from holiday
   demand is no longer in Item 1A.
+- **Payment cards.** Folded into the privacy paragraph, but the risk of losing
+  the ability to process payment cards for failing industry security
+  standards is gone.
+- **Single-source suppliers.** Folded into the manufacturing-concentration
+  paragraph, but the list of ways manufacturing or logistics "or transit to
+  final destinations" can be disrupted (disasters, IT failures, labour
+  issues, geopolitical tensions) is gone.
+- **Manufacturing equipment and supplier prepayments.** Credit risk on
+  prepayments survives in the receivables paragraph, but the risk that
+  equipment held at suppliers and prepayments may not be recoverable if a
+  supplier gets into financial trouble is gone.
 
-Both partial removals were checked only within Item 1A. The same language may
-have moved to another part of the 10-K.
+The last three were confirmed by searching the whole FY2025 10-K for the
+dropped wording. The first two were checked within Item 1A only; that
+language may have moved elsewhere in the 10-K.
 
 **Why the raw count was wrong.** Apple restructured Item 1A this year and
 combined several paragraphs into fewer, longer ones. The matcher pairs
@@ -236,9 +251,48 @@ with the two paragraphs in the new filing that contain most of its content.
 The model must decide whether the risk was removed, moved or reworded, or
 partially removed, and a "still disclosed" verdict must quote the new filing.
 That quote is checked like any other, so the model cannot claim the text
-survived without showing where. Its verdicts are scored against the hand
-verification above. Taking the diff's REMOVED label at face value agrees with
-the hand verdict for 4 of the 9 judged paragraphs. Responses are cached
+survived without showing where.
+
+**Result.** The model's verdicts were scored against the hand verification
+above, for the 9 removals it judged (the other 3 were merge artifacts and
+skipped). The baseline is the diff's label taken at face value, which calls
+all 9 removed.
+
+| question | model | diff label alone |
+|---|---|---|
+| exact verdict (removed / moved / partly removed) | 7/9 | 4/9 |
+| was the risk dropped completely? | 7/9 | 4/9 |
+
+None of the four self-contradicting removals from the first run is still
+reported as removed.
+
+The 7/9 needs two qualifications:
+
+- **The model also corrected the hand labels.** It first scored 4/9 exact.
+  Three of its five disagreements were paragraphs I had marked as merged or
+  reworded that the model called partly removed, naming the detail that was
+  missing. Searching the FY2025 10-K found none of that wording, so the model
+  was right and the labels were changed. Labels were changed only where the
+  filing confirmed it; with nine examples it would be easy to tune labels or
+  prompt until the score looked good and the score meant nothing.
+- **The two remaining misses are different in kind.** One is a model error:
+  it treated the new preamble as preserving the old "past financial
+  performance should not be considered a reliable indicator" disclaimer,
+  which it does not — the shared-boilerplate trap the prompt warns against.
+  The other is a definition mismatch. The paragraph on Apple's "ability to
+  continually improve its products" was deleted (the hand label), but an
+  overlapping paragraph that already existed in FY2024 still covers the risk
+  (the model's answer). The two labels answer different questions: "was this
+  paragraph deleted?" versus "is this risk still disclosed?"
+
+Nine examples from one filing is too few to call the model accurate. What it
+shows is that judging removals against the surviving text stopped the
+dangerous error, a still-disclosed risk reported as removed.
+
+Not yet fixed: a mispaired MODIFIED change. The diff matched the old
+introduction to an unrelated competition paragraph, and the model summarised
+the "change" between them as a high-materiality replacement. Low-similarity
+pairs need the same judgment step. Responses are cached
 on disk by model, prompt version and change text, so re-runs only pay for new
 changes.
 
@@ -295,3 +349,8 @@ not tokens.
 
 ## Limitations
 
+This is an information-summarisation tool, not investment advice. Disclosure
+changes are one input among many, LLM summaries can misrepresent source text,
+and the thresholds are validated against a single filer. Every summary should
+link back to the underlying filing text so claims can be checked against the
+original.
