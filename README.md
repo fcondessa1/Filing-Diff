@@ -331,11 +331,33 @@ tokenizer does not stem, so "import" would not match "imports". Vector search
 is a brute-force cosine in numpy, which takes milliseconds at a few thousand
 chunks; a vector index would add a dependency without making it faster.
 
-`eval_rag.py` scores the three modes on eight questions whose answers are
-known phrases in the FY2025 10-K, worded differently from the filing
-("import duties", not "tariffs"). It reports hit@5, hit@10 and mean
-reciprocal rank. Eight questions written by the person who built the system
-is a smoke test, not a benchmark.
+`eval_rag.py` scores the three modes on questions whose answers are known
+phrases in Apple's filings, so a hit is a checkable fact. Scores are mean
+reciprocal rank (1.0 means the answer was always ranked first):
+
+| question type | keyword | meaning | combined |
+|---|---|---|---|
+| reworded: worded unlike the filing, e.g. "import duties" (8) | 0.48 | **0.84** | 0.65 |
+| exact-term: legal names in the filing, e.g. "Section 232" (4) | **1.00** | 0.62 | 0.88 |
+| all 12 | 0.65 | **0.77** | 0.72 |
+
+The first version had only the reworded questions, and on those combined
+search lost to meaning search alone: equal-weight fusion let keyword noise
+outvote a correct answer only meaning search had found. "How dependent is
+Apple on one product?" dropped from rank 1 to rank 9, because "product"
+appears in hundreds of paragraphs and keyword search returned 50 noisy
+matches. But questions written to avoid the filing's wording cannot show what
+keyword search adds, so exact-term questions were added before choosing a
+default. Each method then won its own group.
+
+Combined search stays the default. It is never the best, but it is the only
+mode that is not the worst on either kind of question, and `ask.py` reads 12
+passages, so what matters is whether the answer reaches the top 10, which
+both meaning-only and combined achieved on all 12 questions. Meaning-only's
+higher MRR rests on four questions that split two each way. Weighting the two
+methods differently might help, but tuning a weight on 12 questions would fit
+these 12 questions, so it was not done. Twelve questions written by the
+person who built the system is a smoke test, not a benchmark.
 
 **Answers are checked the same way as the summaries.** Passages are given to
 Claude oldest first, labelled with filing date and form, so it can say when
