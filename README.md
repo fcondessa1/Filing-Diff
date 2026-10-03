@@ -86,7 +86,7 @@ Full verdicts, with both versions of each paragraph:
 - [x] Removals verified by hand against source filings (AAPL FY2025)
 - [ ] Merge / split detection built into the diff itself
 - [x] LLM summarisation of deltas, with every quote checked against the source text
-- [ ] RAG index across filings for cross-quarter questions
+- [x] Question answering across filings: hybrid search over SQLite, cited and checked answers
 - [ ] Weekly digest for my watchlist
 
 ## Setup
@@ -112,6 +112,17 @@ python summarise.py AAPL 1A --limit 5   # cheap first run
 python summarise.py AAPL 1A             # writes results/aapl_1a_digest.md
 ```
 
+To ask questions across filings, index them first. Embeddings run locally
+(no key, no cost); the model downloads once, about 130 MB:
+
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+python store.py ingest AAPL                 # last 8 10-K/10-Q filings
+python eval_rag.py AAPL                     # check retrieval first
+python ask.py AAPL "What has Apple said about tariffs?"
+```
+
 ## Architecture
 
 ```
@@ -121,6 +132,9 @@ idf.py        corpus-derived term weights used by the production metric
 diff2.py      two versions of an Item -> added / removed / modified
 run_diff.py   CLI tying the above together
 summarise.py  Claude explains each change; code verifies every quote it gives
+store.py      SQLite store: filings, sections, chunks, embeddings, full-text index
+ask.py        answer questions across filings, each claim checked against its source
+eval_rag.py   score keyword, vector and hybrid retrieval before trusting answers
 ```
 
 Diagnostics — these produced the design decisions below and are part of the
@@ -295,6 +309,42 @@ the "change" between them as a high-materiality replacement. Low-similarity
 pairs need the same judgment step. Responses are cached
 on disk by model, prompt version and change text, so re-runs only pay for new
 changes.
+
+## Asking questions across filings
+
+`ask.py` answers a question from the last eight filings (10-Ks and 10-Qs,
+Risk Factors and MD&A), for example "what has Apple said about tariffs over
+the last two years?"
+
+**Storage is plain SQL.** `store.py` keeps filings, extracted sections and
+paragraph-sized chunks in SQLite tables, one file (`data/filings.db`, not
+committed). Each chunk stores its embedding, and SQLite's built-in full-text
+index (FTS5) covers the same text.
+
+**Retrieval is hybrid, and measured.** Embeddings from a local model
+(`BAAI/bge-small-en-v1.5`) find passages that mean the same as the question
+("customs duties" finds "tariffs"). Keyword search with BM25 ranking finds
+exact terms such as case names. The two rankings are merged by reciprocal
+rank fusion, which needs no tuning of how a cosine similarity compares with
+a BM25 score. The full-text index uses the Porter stemmer: SQLite's default
+tokenizer does not stem, so "import" would not match "imports". Vector search
+is a brute-force cosine in numpy, which takes milliseconds at a few thousand
+chunks; a vector index would add a dependency without making it faster.
+
+`eval_rag.py` scores the three modes on eight questions whose answers are
+known phrases in the FY2025 10-K, worded differently from the filing
+("import duties", not "tariffs"). It reports hit@5, hit@10 and mean
+reciprocal rank. Eight questions written by the person who built the system
+is a smoke test, not a benchmark.
+
+**Answers are checked the same way as the summaries.** Passages are given to
+Claude oldest first, labelled with filing date and form, so it can say when
+something changed. Every claim must cite a passage and quote it exactly; the
+code checks that the passage was one the model was shown and that the quote
+is in it, and says where a misattributed quote really is. The model can
+answer "not in sources" instead of stretching unrelated passages into an
+answer. As the summariser showed, a verified quote still does not make a
+claim true, so the answer lists the passages it rests on.
 
 ## Threshold provenance
 

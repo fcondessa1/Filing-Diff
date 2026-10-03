@@ -1,4 +1,9 @@
 requests>=2.31
 beautifulsoup4>=4.12
 scipy>=1.11
+numpy>=1.26
 anthropic>=1.11
+# Local embeddings for ask.py. Install the CPU build of torch FIRST, or pip
+# pulls the much larger GPU build:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+sentence-transformers>=3.0
