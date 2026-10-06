@@ -368,6 +368,22 @@ answer "not in sources" instead of stretching unrelated passages into an
 answer. As the summariser showed, a verified quote still does not make a
 claim true, so the answer lists the passages it rests on.
 
+**Model choice is the defence against omissions.** Haiku and Sonnet were
+asked the same question ("what has Apple said about tariffs over the last two
+years?") with the same 12 passages, so any difference came from the model.
+Both verified 5 of 5 claims. But Haiku left out the new tariffs imposed under
+Section 122 and Section 301, which were in the passages it was shown, and
+ended on the Supreme Court refunds, implying tariffs were being wound down.
+Sonnet named both and ended on the latest position. A citation check proves
+what the model said is in the sources, not that it said everything important,
+so `ask.py` defaults to Sonnet (about 2.4 cents a question against 0.9). The
+summariser's 63 calls per filing stay on Haiku.
+
+Neither model reached back before May 2025, though the database holds the
+November 2024 10-K, which did discuss tariffs. Six of the 12 passages were
+the same paragraph repeated across six filings, which crowded out the older
+material. That is a retrieval problem no model can fix.
+
 ## Threshold provenance
 
 Not eyeballed. `tune.py` sweeps each metric and reports how the buckets move.

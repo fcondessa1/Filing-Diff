@@ -32,7 +32,18 @@ import re
 import sys
 from pathlib import Path
 
-from summarise import DEFAULT_MODEL, _EDGE_PUNCT, cost_usd, normalise
+from summarise import _EDGE_PUNCT, cost_usd, normalise
+
+# Questions default to a larger model than the summariser. On the first
+# cross-filing question ("what has Apple said about tariffs over the last two
+# years?"), Haiku and Sonnet were given the same 12 passages. Both verified
+# 5/5 claims, but Haiku left out the new Section 122 and Section 301 tariffs
+# and ended on the Supreme Court refunds, implying tariffs were being wound
+# down; Sonnet named both and ended on the latest position. Citation checks
+# cannot catch an omission, so the model choice is the defence. It costs about
+# 2.4 cents per question against 0.9, which is negligible for one question,
+# while the summariser's 63 calls per filing stay on Haiku.
+ASK_MODEL = os.environ.get("FILING_DIFF_ASK_MODEL", "claude-sonnet-5-5")
 
 QA_DIR = Path("results/qa")
 DEFAULT_K = 12
@@ -141,7 +152,7 @@ def check_answer(parsed: dict, passages: list[dict]) -> dict:
 # --------------------------------------------------------------------------- #
 
 def ask(client, conn, embedder, ticker: str, question: str,
-        k: int = DEFAULT_K, model: str = DEFAULT_MODEL) -> dict:
+        k: int = DEFAULT_K, model: str = ASK_MODEL) -> dict:
     from store import search
 
     passages = search(conn, embedder, ticker, question, k=k)
@@ -209,7 +220,11 @@ def render(result: dict) -> str:
 def save(result: dict) -> Path:
     QA_DIR.mkdir(parents=True, exist_ok=True)
     slug = re.sub(r"[^a-z0-9]+", "-", result["question"].lower()).strip("-")[:60]
-    path = QA_DIR / f"{result.get('ticker', 'x').lower()}_{slug}.md"
+    # The model is part of the name, so asking the same question with a
+    # different model keeps both answers for comparison.
+    model = re.sub(r"[^a-z0-9]+", "-", result.get("model", "model").lower())
+    model = re.sub(r"^claude-|-\d{8}$", "", model)
+    path = QA_DIR / f"{result.get('ticker', 'x').lower()}_{slug}_{model}.md"
     path.write_text(render(result))
     return path
 
@@ -219,7 +234,7 @@ def main():
     ap.add_argument("ticker")
     ap.add_argument("question")
     ap.add_argument("--k", type=int, default=DEFAULT_K, help="passages to retrieve")
-    ap.add_argument("--model", default=DEFAULT_MODEL)
+    ap.add_argument("--model", default=ASK_MODEL)
     args = ap.parse_args()
 
     if not os.environ.get("ANTHROPIC_API_KEY"):
