@@ -3,13 +3,19 @@ Minimal SEC EDGAR client.
 
 EDGAR is free and has no API key, but it DOES enforce two rules:
   1. You must send a User-Agent identifying yourself (name + email).
-  2. Max 10 requests/second. 
+  2. Max 10 requests/second. We stay well under.
+
+Violating #1 gets you a 403. Violating #2 gets you IP-banned.
 """
 
+import os
 import time
+
 import requests
 
-import os
+# EDGAR returns 403 without a real name and email. Read from the environment
+# so they are never committed: set EDGAR_USER_AGENT in ~/.bashrc locally, and
+# as a repository secret for the scheduled digest.
 USER_AGENT = os.environ.get("EDGAR_USER_AGENT", "Your Name your.email@example.com")
 
 HEADERS = {"User-Agent": USER_AGENT}

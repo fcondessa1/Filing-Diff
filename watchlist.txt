@@ -1,0 +1,11 @@
+# Tickers for the weekly digest, one per line. Lines starting with # are ignored.
+# A new ticker's first run records its existing filings as the starting point
+# and reports nothing; changes are reported from its next filing on.
+IONQ
+NVDA
+OKTA
+GOOGL
+AMZN
+LEU
+MSFT
+QBTS

@@ -1,0 +1,77 @@
+# Weekly filing digest: checks the watchlist for new 10-K / 10-Q filings,
+# summarises Risk Factor changes, commits the digest, and opens an issue
+# when there is something new (GitHub emails you about new issues).
+#
+# Needs two repository secrets (Settings -> Secrets and variables -> Actions):
+#   ANTHROPIC_API_KEY   your sk-ant-api03-... key
+#   EDGAR_USER_AGENT    "Your Name your.email@example.com"
+#
+# Run it by hand from the Actions tab ("Run workflow"); tick force_latest to
+# get a digest of each ticker's latest filing straight away.
+
+name: Weekly filing digest
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays 06:17 UTC (off the hour: top-of-hour runs queue)
+  workflow_dispatch:
+    inputs:
+      force_latest:
+        description: "Summarise each ticker's latest filing even if already seen"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # commit the digest and state
+  issues: write     # open the notification issue
+
+concurrency:
+  group: weekly-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-digest.txt
+
+      # The digest does not use the embedding model, so torch and
+      # sentence-transformers are not installed here.
+      - run: pip install -r requirements-digest.txt
+
+      - name: Build digest
+        id: digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EDGAR_USER_AGENT: ${{ secrets.EDGAR_USER_AGENT }}
+          FORCE: ${{ inputs.force_latest && '--force-latest' || '' }}
+        run: python digest.py $FORCE
+
+      - name: Commit digest and state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/digests
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "Weekly digest $(date -u +%F)"
+            git push
+          fi
+
+      - name: Open issue
+        if: steps.digest.outputs.news == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ steps.digest.outputs.title }}
+          DIGEST: ${{ steps.digest.outputs.digest }}
+        run: |
+          head -c 60000 "$DIGEST" > issue_body.md   # issue bodies are capped at 65,536 characters
+          gh issue create --title "$TITLE" --body-file issue_body.md

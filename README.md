@@ -87,7 +87,7 @@ Full verdicts, with both versions of each paragraph:
 - [ ] Merge / split detection built into the diff itself
 - [x] LLM summarisation of deltas, with every quote checked against the source text
 - [x] Question answering across filings: hybrid search over SQLite, cited and checked answers
-- [ ] Weekly digest for my watchlist
+- [x] Weekly digest for my watchlist, run on a schedule by GitHub Actions
 
 ## Setup
 
@@ -135,6 +135,7 @@ summarise.py  Claude explains each change; code verifies every quote it gives
 store.py      SQLite store: filings, sections, chunks, embeddings, full-text index
 ask.py        answer questions across filings, each claim checked against its source
 eval_rag.py   score keyword, vector and hybrid retrieval before trusting answers
+digest.py     weekly: new filings on the watchlist -> checked summaries -> issue
 ```
 
 Diagnostics — these produced the design decisions below and are part of the
@@ -449,6 +450,43 @@ dropped. Numbers now count, except four-digit years, which roll forward each
 filing without saying anything new. An in-between version is also kept if it
 contains a number that no kept version has, since one new section number
 changes the meaning without moving a similarity ratio much.
+
+## Weekly digest
+
+`digest.py` runs every Monday on GitHub's servers
+(`.github/workflows/weekly-digest.yml`), so nothing has to be left running.
+For each ticker in `watchlist.txt` it asks EDGAR for 10-K and 10-Q filings it
+has not processed, compares each new filing's Risk Factors with the previous
+filing of the same form, runs the same checked pipeline as `summarise.py`
+(merge detection, removals judged against surviving text, every quote
+verified), commits `results/digests/<date>.md`, and opens a GitHub issue,
+which GitHub emails to the repository owner. Filings arrive about once a
+quarter per company, so most weeks report nothing new and make no API calls.
+
+Design decisions:
+
+- **10-Q is compared with 10-Q, not with the last 10-K.** A 10-Q's Risk
+  Factors section lists only updates to the annual report, not the full set.
+  Diffing it against a 10-K would report every risk factor it does not repeat
+  as removed. Some 10-Qs only say there were no material changes; the digest
+  says that rather than reporting a removal of everything.
+- **Adding a company does not summarise its history.** A ticker's first run
+  records all its listed filings as the starting point. Recording only the
+  latest, as the first draft did, would have made the older ones look new
+  the following week.
+- **Failures are reported and retried.** One ticker failing does not stop
+  the others; the error appears in the digest and counts as news, and a
+  filing that failed to process is not marked as done, so next week retries
+  it.
+- **The scheduled job does not install the embedding model.** The digest
+  only diffs and summarises, so `requirements-digest.txt` leaves out torch
+  and sentence-transformers.
+
+Setup: add two repository secrets under Settings → Secrets and variables →
+Actions: `ANTHROPIC_API_KEY` and `EDGAR_USER_AGENT` ("Your Name
+your.email@example.com"). Then run the workflow once from the Actions tab
+with `force_latest` ticked, to see a digest of each ticker's latest filing
+straight away.
 
 ## Threshold provenance
 

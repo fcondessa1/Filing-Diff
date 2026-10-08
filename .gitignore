@@ -21,3 +21,7 @@ filings/
 .idea/
 /*.txt
 cache/
+!/watchlist.txt
+!/requirements*.txt
+!/watchlist.txt
+!/requirements*.txt
