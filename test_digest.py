@@ -20,6 +20,8 @@ RISK_OLD = (
     "significant technical, marketing and distribution resources, which could reduce margins.\n\n"
     "The Company relies on single-source partners in Asia for the final assembly of substantially "
     "all of its hardware products, and disruptions there can affect supply and cost.")
+NO_CHANGES = ("Item 1A. Risk Factors\n\nThere have been no material changes to the risk factors "
+              "disclosed in our Annual Report on Form 10-K for the year ended December 31, 2025.")
 RISK_NEW = RISK_OLD + (
     "\n\nThe Company is also subject to new laws on online safety, including protections for "
     "minors and mandatory age verification requirements, which may require costly changes.")
@@ -33,10 +35,12 @@ class FakeClient:
     """Answers every call with a valid structured response; counts calls."""
     def __init__(self):
         self.calls = 0
+        self.sent = []
         self.messages = self
 
     def create(self, **kwargs):
         self.calls += 1
+        self.sent.append(kwargs["messages"][0]["content"])
         answer = {"summary": "Added a new risk on online safety and age verification.",
                   "materiality": "high", "materiality_reason": "A new category of regulation.",
                   "evidence": [{"source": "new", "quote": "mandatory age verification requirements"}],
@@ -126,6 +130,7 @@ def test_new_10q(tmp):
         "compared with the previous 10-Q, not the 10-K": "vs 10-Q filed 2026-01-30" in text,
         "the added risk is summarised": "age verification" in text and client.calls >= 1,
         "summary shown with materiality": "HIGH" in text,
+        "the model is told whose filing it is": client.sent and "COMPANY: AAPL" in client.sent[0],
         "filing recorded as processed": "q2" in state["AAPL"],
         "previous-of-same-form skips the 10-K": digest.previous_of_same_form([q2, q1, k25], q2) == q1
             and digest.previous_of_same_form([k25, q2, q1], k25) is None,
@@ -137,7 +142,7 @@ def test_missing_section_and_errors(tmp):
     w = World()
     q1, q2 = filing("q1", "10-Q", "2026-01-30"), filing("q2", "10-Q", "2026-05-01")
     w.filings["AAPL"] = [q2, q1]
-    w.texts = {q1["url"]: RISK_OLD, q2["url"]: None}      # 10-Q says "no material changes"
+    w.texts = {q1["url"]: RISK_OLD, q2["url"]: NO_CHANGES}   # 10-Q says "no material changes"
     w.filings["MSFT"] = [filing("m2", "10-Q", "2026-04-29")]
     w.fail = {"MSFT"}
     w.install()
@@ -165,14 +170,15 @@ def test_missing_section_and_errors(tmp):
     state2 = json.loads(digest.STATE_PATH.read_text())
 
     return show({
-        "missing Risk Factors section explained, no API call":
-            "No Risk Factors section found" in text and client.calls == 0,
+        "a 'no material changes' 10-Q is quoted, not diffed, and costs no API call":
+            "No changes reported" in text and "no material changes to the risk factors" in text
+            and client.calls == 0,
         "one ticker failing does not stop the others": "AAPL 10-Q" in title and "MSFT error" in title,
         "the error is in the digest": "## Errors" in text and "EDGAR unreachable" in text,
         "errors count as news (so you hear about them)": news and news2,
         "a filing that failed to process is not recorded, so it is retried":
             "q2" not in state2["AAPL"],
-        "a filing that processed (even with no section) is recorded": "q2" in state["AAPL"],
+        "a filing that processed (even with nothing to report) is recorded": "q2" in state["AAPL"],
     }, "missing sections and errors")
 
 
@@ -209,10 +215,31 @@ def test_10k_extraction_failure(tmp):
     text = path.read_text()
     return show({
         "missing Risk Factors in a 10-K is reported as a parsing failure":
-            "Could not extract Risk Factors" in text and "parsing failure" in text,
+            "Could not find the Risk Factors heading" in text and "parsing failure" in text,
         "not explained away as 'no material changes'": "no material changes" not in text,
         "the issue title flags it": "(extraction failed)" in title,
     }, "10-K extraction failure")
+
+
+def test_updates_after_no_changes(tmp):
+    fresh_dirs(tmp, "updates")
+    w = World()
+    q1, q2 = filing("q1", "10-Q", "2026-05-07"), filing("q2", "10-Q", "2026-08-10")
+    w.filings["IONQ"] = [q2, q1]
+    w.texts = {q1["url"]: NO_CHANGES, q2["url"]: RISK_NEW}
+    w.install()
+    digest.save_state({"IONQ": ["q1"]})
+    client = FakeClient()
+    path, news, title = digest.run(client, "claude-haiku-4-5-20251001", ["IONQ"], today="2026-08-10")
+    text = path.read_text()
+    rows = json.loads((digest.DIGEST_DIR / "2026-08-10.json").read_text())["IONQ"][0]["rows"]
+    return show({
+        "the earlier 'no changes' statement is explained": "reported no changes" in text,
+        "every paragraph of the updates is reported as added":
+            rows and all(r["kind"] == "added" for r in rows) and len(rows) == 3,
+        "nothing is reported as removed": "REMOVED" not in text,
+        "not flagged as an extraction failure": "(extraction failed)" not in title,
+    }, "updates after a 'no changes' quarter")
 
 
 if __name__ == "__main__":
@@ -223,7 +250,7 @@ if __name__ == "__main__":
     try:
         results = [test_watchlist(tmp), test_first_run_and_quiet_week(tmp), test_new_10q(tmp),
                    test_missing_section_and_errors(tmp), test_force_latest(tmp),
-                   test_10k_extraction_failure(tmp)]
+                   test_10k_extraction_failure(tmp), test_updates_after_no_changes(tmp)]
     finally:
         (edgar.get_cik, edgar.list_filings, digest.risk_factors,
          digest.DIGEST_DIR, digest.STATE_PATH, summarise.CACHE_DIR) = saved

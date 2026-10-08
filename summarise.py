@@ -266,7 +266,19 @@ def check_evidence(change: dict, evidence: list[dict], verdict: str | None = Non
 # Model call, with cache and cost accounting
 # --------------------------------------------------------------------------- #
 
+def _company_line(change: dict) -> list[str]:
+    # Without this the model is never told whose filing it is reading, and on
+    # the first multi-company digest it guessed: an NVIDIA risk and a
+    # Microsoft risk were both summarised as "Broadcom added...".
+    company = change.get("company")
+    return ([f"COMPANY: {company} (refer to it as \"the company\")"] if company else [])
+
+
 def build_user_message(change: dict) -> str:
+    return "\n\n".join(_company_line(change) + [_change_message(change)])
+
+
+def _change_message(change: dict) -> str:
     kind = change["kind"]
     if kind == "removed" and change.get("candidates") is not None:
         parts = ["CHANGE TYPE: removed (according to the diff)", f"OLD:\n{change['old']}"]
@@ -294,6 +306,8 @@ def cache_key(model: str, change: dict) -> str:
     fields = [PROMPT_VERSIONS[kind], model, kind, change.get("old"), change.get("new")]
     if kind == "removed":
         fields.append([c["text"] for c in change.get("candidates") or []])
+    if change.get("company"):   # only when given, so earlier cached answers keep their keys
+        fields.append(change["company"])
     payload = json.dumps(fields, ensure_ascii=False)
     return hashlib.sha256(payload.encode()).hexdigest()[:24]
 

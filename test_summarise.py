@@ -301,6 +301,8 @@ def test_hand_labels_and_scoring(tmp: Path):
         "blank verdict ignored": len(labels) == 3,
         "model agreement 1/2, diff-label baseline 1/2":
             score and (score["model_agree"], score["diff_agree"], score["n"]) == (1, 1, 2),
+        "fully-removed score separates the error types":
+            score and (score["model_agree_binary"], score["diff_agree_binary"]) == (1, 1),
     }
     for label, passed in checks.items():
         print(f"  {'PASS' if passed else 'FAIL'}  {label}")
@@ -323,7 +325,7 @@ def test_digest_removal_section(tmp: Path):
     checks = {
         "verdict shown instead of a bare REMOVED": "NOT REMOVED (moved or reworded)" in text,
         "removal tally (flagged / skipped / judged)": "flagged 4 paragraphs as removed" in text,
-        "agreement with hand verification reported": "matched 1 of 1" in text,
+        "agreement with hand verification reported": "| exact verdict" in text and "1/1" in text,
         "unproven \"moved\" verdict flagged": "VERDICT UNSUPPORTED" in text,
     }
     for label, passed in checks.items():

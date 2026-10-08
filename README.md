@@ -468,8 +468,8 @@ Design decisions:
 - **10-Q is compared with 10-Q, not with the last 10-K.** A 10-Q's Risk
   Factors section lists only updates to the annual report, not the full set.
   Diffing it against a 10-K would report every risk factor it does not repeat
-  as removed. Some 10-Qs only say there were no material changes; the digest
-  says that rather than reporting a removal of everything.
+  as removed. 10-Qs write this section in three ways (see below); a "no
+  material changes" statement is quoted, not diffed.
 - **Adding a company does not summarise its history.** A ticker's first run
   records all its listed filings as the starting point. Recording only the
   latest, as the first draft did, would have made the older ones look new
@@ -481,6 +481,36 @@ Design decisions:
 - **The scheduled job does not install the embedding model.** The digest
   only diffs and summarises, so `requirements-digest.txt` leaves out torch
   and sentence-transformers.
+
+### First run on eight companies: what broke
+
+Everything before the digest was built and tuned on Apple. The first live run
+(IONQ, NVDA, OKTA, GOOGL, AMZN, LEU, MSFT, QBTS) was the first test on other
+filers. It completed for 4 of 8 companies (NVDA, GOOGL, LEU, MSFT: 128
+changes, about 25 cents) and showed three problems, each diagnosed with
+`diagnose_extraction.py` against the actual filings before anything was
+changed:
+
+| Company | What the run said | What the filing actually contained | Fix |
+|---|---|---|---|
+| AMZN | no Risk Factors section | the "Item 1A. Risk Factors" heading is a two-row layout table (one empty row that only sets column widths); the extractor dropped every table, so the heading disappeared | keep one-row-of-text tables that start with "Item N" and name no other item, as headings; the table of contents and financial tables are still dropped. Both AMZN 10-Qs now extract (about 61,000 characters each) |
+| OKTA, IONQ Q1, QBTS Q1 | no Risk Factors section | a single sentence: "There have been no material changes to the risk factors..." (200 to 700 characters, under the 1,000-character minimum meant to filter out table-of-contents fragments) | the digest reads short sections too and quotes the statement; no API call |
+| IONQ Q2, QBTS Q2 | nothing (compared against the "no changes" quarter) | only the updates: "Other than as set forth below, there have been no material changes", then the new risks | when the previous 10-Q was a statement, every risk in the new section is reported as added since last quarter |
+
+My first guess, before the diagnostic, was that all four were table-heading
+failures. It was right for one company. The other three were the extractor
+working correctly on a form of disclosure I had not seen in Apple's filings.
+
+The summaries had a separate problem: the model was never told whose filing it
+was reading, and summarised an NVIDIA risk and a Microsoft risk as "Broadcom
+added...". The quotes behind both were verified, so the citation check passed.
+It is the same lesson as the removal summaries: a check on quotes cannot catch
+a wrong statement built around them. The ticker is now part of the prompt.
+
+Still open from that run: some paragraphs are split mid-sentence at page
+breaks (an NVDA risk "ending mid-sentence at 'penalties available'"), and two
+MSFT rows describe the same wording as added in one and removed in the other,
+the mis-paired paragraph problem seen with Apple.
 
 Setup: add two repository secrets under Settings → Secrets and variables →
 Actions: `ANTHROPIC_API_KEY` and `EDGAR_USER_AGENT` ("Your Name
@@ -536,8 +566,9 @@ not tokens.
   the token metric as baselines.
 - **10-Q numbering** differs from 10-K (MD&A is Part I Item 2). Currently a
   lookup table; may need per-form logic.
-- **Generalisation.** Everything above was tuned against one filer. The
-  thresholds should not be trusted beyond Apple until swept against others.
+- **Generalisation.** The diff thresholds were tuned against one filer and
+  have not been swept against others. Extraction has now been tested on eight
+  more (see "First run on eight companies"); the thresholds have not.
 
 ## Limitations
 

@@ -28,6 +28,17 @@ BOUNDARIES = {
 }
 
 
+HEADING_TABLE_MAX = 120   # characters; a heading row, not a table of contents
+_HEADING_TABLE = re.compile(r"^(part\s+[ivx]+\W*)?item\s*\d+[a-z]?\b", re.IGNORECASE)
+
+# A real section is long; a table-of-contents fragment is a few dozen
+# characters. 10-Qs that report no changes ("There have been no material
+# changes to the risk factors...") fall in between, at 200 to 700 characters,
+# so callers that need to tell "no changes" from "not found" pass a lower
+# min_chars and read the statement themselves.
+MIN_SECTION_CHARS = 1000
+
+
 def html_to_text(html: str) -> str:
     """
     Flatten filing HTML to plain text.
@@ -39,8 +50,28 @@ def html_to_text(html: str) -> str:
     """
     soup = BeautifulSoup(html, "html.parser")
 
-    for tag in soup(["script", "style", "table"]):
+    for tag in soup(["script", "style"]):
         tag.decompose()
+
+    # Some filers lay out item headings as a one-row table: "Item 1A." in one
+    # cell, "Risk Factors" in the next (Amazon's 10-Qs). Dropping every table
+    # deleted the heading, so the section could not be found at all. Short
+    # one-row tables that begin with "Item N" and name no other item are
+    # headings: keep their text as a paragraph. The table of contents (many
+    # rows, many items) and the financial tables are still dropped.
+    for table in soup.find_all("table"):
+        if table.decomposed:
+            continue
+        label = re.sub(r"\s+", " ", table.get_text(" ").replace("\xa0", " ")).strip()
+        # Count rows with text: layout tables often carry an empty first row
+        # that only sets column widths.
+        rows = [tr for tr in table.find_all("tr") if tr.get_text(strip=True)]
+        one_heading = (len(rows) <= 1
+                       and len(re.findall(r"\bitem\s*\d", label, re.IGNORECASE)) == 1)
+        if one_heading and len(label) <= HEADING_TABLE_MAX and _HEADING_TABLE.match(label):
+            table.replace_with(soup.new_string(f"\n\n{label}\n\n"))
+        else:
+            table.decompose()
 
     # Insert an explicit break after every block-level element BEFORE
     # flattening. Without this, filers whose paragraphs are <div>/<span>
@@ -90,7 +121,7 @@ def _find_all(text: str, item: str) -> list[int]:
     return out
 
 
-def extract_item(text: str, item: str) -> str | None:
+def extract_item(text: str, item: str, min_chars: int = MIN_SECTION_CHARS) -> str | None:
     """
     Pull one Item's body text.
 
@@ -114,17 +145,19 @@ def extract_item(text: str, item: str) -> str | None:
         if best is None or len(span) > len(best):
             best = span
 
-    # Anything under ~1000 chars is a TOC artifact, not a real section.
-    if best is None or len(best) < 1000:
+    # Under min_chars is a TOC artifact (or, for a 10-Q, a "no changes"
+    # statement, which only callers passing a lower min_chars want).
+    if best is None or len(best.strip()) < min_chars:
         return None
     return best.strip()
 
 
-def extract_sections(html: str, items=("1A", "7")) -> dict[str, str]:
+def extract_sections(html: str, items=("1A", "7"),
+                     min_chars: int = MIN_SECTION_CHARS) -> dict[str, str]:
     """Convenience wrapper: HTML in, {item: body_text} out."""
     text = html_to_text(html)
     return {
         item: body
         for item in items
-        if (body := extract_item(text, item)) is not None
+        if (body := extract_item(text, item, min_chars)) is not None
     }
