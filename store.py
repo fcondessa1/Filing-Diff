@@ -240,16 +240,36 @@ _FTS_STOP = frozenset("""a an and are as at be by can could did do does for from
 in is it its of on or that the their this to was were what when where which who why will
 with would about over any company companys apple has said say""".split())
 
+# Words that set the time range of a question rather than its topic. Left in,
+# they swamp the keyword search: "What has Apple said about tariffs over the
+# last two years?" became "tariffs OR last OR two OR years", and paragraphs
+# comparing "the same period last year" crowded out a November 2024 passage
+# that contains "tariffs" (keyword rank > 50). The time range is handled by
+# showing passages with their filing dates, not by matching these words.
+_TIME_WORDS = frozenset("""last past recent recently lately latest current currently
+year years yearly annual annually quarter quarters quarterly month months week weeks
+day days period periods time times timeline ago since until before after during
+two three four five six eight ten several few many first earlier later now today
+history historical historically trend trends evolved evolve over""".split())
+
 
 def fts_query(question: str) -> str | None:
     """Turn free text into a safe FTS5 query: content words OR-ed together.
     Raw user text would break FTS5 syntax on punctuation and quotes."""
-    words = [w for w in re.findall(r"[a-z0-9]+", question.lower())
-             if w not in _FTS_STOP and len(w) > 2]
+    # Two-letter words are usually filler ("is", "on"), but written in
+    # capitals they are acronyms that carry the topic: "AI", "EU".
+    words = [w.lower() for w in re.findall(r"[A-Za-z0-9]+", question)
+             if (len(w) > 2 or (len(w) == 2 and w.isupper()))
+             and w.lower() not in _FTS_STOP and w.lower() not in _TIME_WORDS]
     return " OR ".join(f'"{w}"' for w in dict.fromkeys(words)) or None
 
 
-def keyword_ranking(conn, ticker: str, question: str, limit: int = 50) -> list[int]:
+# Results kept per method before fusion. 50 cut off passages that meaning
+# search alone ranked inside the candidate pool once fusion pushed them down.
+RANK_DEPTH = 200
+
+
+def keyword_ranking(conn, ticker: str, question: str, limit: int = RANK_DEPTH) -> list[int]:
     q = fts_query(question)
     if not q:
         return []
@@ -265,7 +285,7 @@ def keyword_ranking(conn, ticker: str, question: str, limit: int = 50) -> list[i
     return [r["id"] for r in rows]
 
 
-def vector_ranking(rows, query_vec: np.ndarray, limit: int = 50) -> list[int]:
+def vector_ranking(rows, query_vec: np.ndarray, limit: int = RANK_DEPTH) -> list[int]:
     with_vec = [r for r in rows if r["embedding"] is not None]
     if not with_vec:
         return []
@@ -305,6 +325,99 @@ def search(conn, embedder, ticker: str, question: str, k: int = 10,
         r = by_id[cid]
         out.append({"id": cid, "text": r["text"], "section": r["section"],
                     "form": r["form"], "filing_date": r["filing_date"], "url": r["url"]})
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# Collapsing repeated paragraphs
+# --------------------------------------------------------------------------- #
+
+# Companies carry MD&A and Risk Factor paragraphs forward from filing to
+# filing, editing a sentence or two each time. On the first cross-filing
+# question ("what has Apple said about tariffs over the last two years?"), six
+# of the twelve passages retrieved were versions of one paragraph, and older
+# filings that discussed tariffs in different words never reached the model.
+# Both models then started their answers in May 2025.
+#
+# Two passages count as versions of the same paragraph when one is mostly
+# contained in the other. Containment rather than Jaccard, because a paragraph
+# that grows each quarter (new sentences appended) still contains its earlier
+# versions, while its Jaccard against them falls as it grows.
+SAME_PARAGRAPH = 0.80
+# An in-between version is kept only if it says something the earliest and
+# latest versions do not, e.g. a sentence added one quarter and dropped later.
+ADDS_CONTENT = 0.90
+CANDIDATES = 40
+
+
+def _content_words(text: str) -> set[str]:
+    from diff2 import _tokens
+    return _tokens(text)
+
+
+def _contained(a: set[str], b: set[str]) -> float:
+    """Share of a's content words that also appear in b."""
+    return len(a & b) / len(a) if a else 0.0
+
+
+def collapse_versions(passages: list[dict], k: int,
+                      eligible_extra: set[int] | None = None) -> list[dict]:
+    """
+    Group repeated versions of a paragraph, keep the versions that matter,
+    and return up to k passages.
+
+    passages must be in relevance order. Each group keeps its earliest and
+    latest version, plus any in-between version that adds content, and every
+    kept passage is labelled with the group's span (how many filings, first
+    and last date) so the model can say when something first appeared.
+
+    Slots freed by dropped copies go to the next distinct passages, but only
+    those in eligible_extra when it is given (in ask.py: passages containing a
+    topic word from the question). The first live run filled freed slots
+    unconditionally and four of twelve went to regional net-sales paragraphs
+    unrelated to the tariff question. The original top k need no such check:
+    they earned their place in the ranking. A passage that is a version of one
+    in the original top k is also exempt, since it belongs to a group already
+    judged relevant.
+    """
+    words = {p["id"]: _content_words(p["text"]) for p in passages}
+    groups: list[list[dict]] = []
+    for p in passages:
+        wp = words[p["id"]]
+        for group in groups:
+            if any(max(_contained(wp, words[q["id"]]), _contained(words[q["id"]], wp))
+                   >= SAME_PARAGRAPH for q in group):
+                group.append(p)
+                break
+        else:
+            groups.append([p])
+
+    top_k = {p["id"] for p in passages[:k]}
+    if eligible_extra is not None:
+        groups = [g for g in groups
+                  if any(p["id"] in top_k or p["id"] in eligible_extra for p in g)]
+
+    out: list[dict] = []
+    for group in groups:                       # groups are in relevance order
+        dated = sorted(group, key=lambda p: (p["filing_date"], p["id"]))
+        keep = [dated[0]] if len(dated) == 1 else [dated[0], dated[-1]]
+        if len(dated) > 1:
+            first, last = words[dated[0]["id"]], words[dated[-1]["id"]]
+            if _contained(last, first) >= ADDS_CONTENT and _contained(first, last) >= ADDS_CONTENT:
+                keep = [dated[-1]]             # essentially unchanged: one copy
+        if len(dated) > 2:
+            union = set().union(*(words[p["id"]] for p in keep))
+            for mid in dated[1:-1]:
+                if _contained(words[mid["id"]], union) < ADDS_CONTENT:
+                    keep.append(mid)
+                    union |= words[mid["id"]]
+        span = {"versions": len(dated),
+                "first": (dated[0]["form"], dated[0]["filing_date"]),
+                "last": (dated[-1]["form"], dated[-1]["filing_date"])}
+        for p in sorted(keep, key=lambda p: (p["filing_date"], p["id"])):
+            if len(out) >= k:
+                return out
+            out.append({**p, "span": span if len(dated) > 1 else None})
     return out
 
 

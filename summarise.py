@@ -298,20 +298,42 @@ def cache_key(model: str, change: dict) -> str:
     return hashlib.sha256(payload.encode()).hexdigest()[:24]
 
 
+class TruncatedResponse(RuntimeError):
+    """The model hit max_tokens, so its JSON is incomplete and must not be parsed."""
+
+
+def response_json(response) -> dict:
+    """
+    Parse a structured-output response, refusing one that was cut off.
+
+    Found on a live run of ask.py: the answer needed more than the 1,500-token
+    cap, the API stopped mid-string, and json.loads failed with "Unterminated
+    string". The API reports this as stop_reason == "max_tokens"; checking it
+    turns a confusing parse error into a clear one, and guarantees a truncated
+    answer is never half-read.
+    """
+    if getattr(response, "stop_reason", None) == "max_tokens":
+        used = getattr(getattr(response, "usage", None), "output_tokens", "?")
+        raise TruncatedResponse(
+            f"The model's reply was cut off at the max_tokens limit ({used} tokens), "
+            "so its JSON is incomplete. Raise max_tokens and run again.")
+    text = next(b.text for b in response.content if b.type == "text")
+    return json.loads(text)
+
+
 def call_model(client, model: str, change: dict) -> dict:
     """One structured-output request. Returns parsed JSON plus token usage."""
     judged_removal = change["kind"] == "removed" and change.get("candidates") is not None
     response = client.messages.create(
         model=model,
-        max_tokens=800,
+        max_tokens=2000,
         system=REMOVED_PROMPT if judged_removal else SYSTEM_PROMPT,
         messages=[{"role": "user", "content": build_user_message(change)}],
         output_config={"format": {"type": "json_schema",
                                   "schema": REMOVED_SCHEMA if judged_removal else SCHEMA}},
     )
-    text = next(b.text for b in response.content if b.type == "text")
     return {
-        "parsed": json.loads(text),
+        "parsed": response_json(response),
         "input_tokens": response.usage.input_tokens,
         "output_tokens": response.usage.output_tokens,
     }
@@ -438,6 +460,14 @@ def score_removals(rows: list[dict], labels: dict[str, str]) -> dict | None:
     Compare the model's removal verdicts with hand verification.
 
     The baseline is the diff on its own, which calls every one of them removed.
+
+    Two scores. Exact agreement over the three verdicts treats "moved" vs
+    "partly removed" as just as wrong as "removed" vs "still disclosed". The
+    second score asks only the question that broke the first digest: was the
+    risk dropped completely? On AAPL FY2025 the exact scores tied (4/9 each)
+    while the fully-removed scores did not (model 7/9, diff label 4/9). The
+    diff's errors were false alarms; the model's were mostly adjacent
+    categories.
     """
     pairs = []
     for r in rows:
@@ -448,10 +478,16 @@ def score_removals(rows: list[dict], labels: dict[str, str]) -> dict | None:
             pairs.append((r, hand))
     if not pairs:
         return None
+    def fully_removed(v):
+        return v == "removed"
+
     return {
         "pairs": pairs,
         "model_agree": sum(r["verdict"] == hand for r, hand in pairs),
         "diff_agree": sum(hand == "removed" for _, hand in pairs),
+        "model_agree_binary": sum(fully_removed(r["verdict"]) == fully_removed(hand)
+                                  for r, hand in pairs),
+        "diff_agree_binary": sum(fully_removed(hand) for _, hand in pairs),
         "n": len(pairs),
     }
 
@@ -525,9 +561,13 @@ def write_digest(ticker: str, item: str, model: str, rows: list[dict],
     score = score_removals(rows, labels or {})
     if score:
         lines += [
-            f"**Against hand verification**, the model's removal verdict matched "
-            f"{score['model_agree']} of {score['n']}. Taking the diff's label at face "
-            f"value would have matched {score['diff_agree']} of {score['n']}.",
+            f"**Against hand verification** ({score['n']} paragraphs):",
+            "",
+            "| question | model | diff label alone |", "|---|---|---|",
+            f"| exact verdict (removed / moved / partly removed) | "
+            f"{score['model_agree']}/{score['n']} | {score['diff_agree']}/{score['n']} |",
+            f"| was the risk dropped completely? | "
+            f"{score['model_agree_binary']}/{score['n']} | {score['diff_agree_binary']}/{score['n']} |",
             "",
             "| paragraph | hand | model | match |", "|---|---|---|---|",
         ]
@@ -610,8 +650,12 @@ def main():
     print(f"\nDigest written to {path}")
     score = score_removals(rows, labels)
     if score:
-        print(f"Removal verdicts vs hand verification: model {score['model_agree']}/{score['n']}, "
-              f"diff label alone {score['diff_agree']}/{score['n']}")
+        n = score["n"]
+        print(f"Removal verdicts vs hand verification (n={n}):")
+        print(f"  exact verdict:          model {score['model_agree']}/{n}, "
+              f"diff label alone {score['diff_agree']}/{n}")
+        print(f"  fully removed (yes/no): model {score['model_agree_binary']}/{n}, "
+              f"diff label alone {score['diff_agree_binary']}/{n}")
 
 
 if __name__ == "__main__":

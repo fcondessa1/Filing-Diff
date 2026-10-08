@@ -21,6 +21,7 @@ import numpy as np
 import ask
 import eval_rag
 import store
+from store import collapse_versions
 
 SYNONYMS = {"duties": "tariff", "duty": "tariff", "tariffs": "tariff", "levies": "tariff",
             "children": "minor", "kids": "minor", "minors": "minor"}
@@ -266,8 +267,148 @@ def test_ingest_skips_indexed(monkeypatch_targets=None):
     }, "ingest")
 
 
+def test_collapse_versions():
+    """
+    Modelled on the first real tariff answer: one MD&A paragraph carried
+    through six filings, growing as events were added, filled half of the
+    twelve slots and pushed out a November 2024 passage.
+    """
+    base = ("Beginning in the second quarter of 2025, new tariffs were announced on imports "
+            "to the U.S., including additional tariffs on imports from China, India, Japan, "
+            "South Korea, Taiwan, Vietnam and the EU. Several countries have imposed reciprocal "
+            "tariffs on imports from the U.S. and other retaliatory measures.")
+    s232 = (" On January 14, 2026, initial results were published of the Section 232 "
+            "investigation into imports of semiconductors, which did not impose additional "
+            "tariffs on the Company's products.")
+    scotus = (" On February 20, 2026, the Supreme Court issued a ruling striking down certain "
+              "tariffs, and the Company applied for refunds of tariffs paid.")
+    versions = [  # (id, form, date, text) -- the Section 232 sentence is later dropped
+        (389, "10-Q", "2025-05-02", base),
+        (332, "10-Q", "2025-08-01", base),
+        (291, "10-K", "2025-10-31", base),
+        (149, "10-Q", "2026-01-30", base + s232),
+        (106, "10-Q", "2026-05-01", base + scotus),
+        (33, "10-Q", "2026-07-31", base + scotus),
+    ]
+    other = [
+        (34, "10-Q", "2026-07-31",
+         "Various modifications to U.S. tariffs have been announced, including the recent "
+         "imposition of tariffs under Section 301 of the Trade Act of 1974. The ultimate impact "
+         "remains uncertain and will depend on several factors."),
+        (372, "10-Q", "2025-05-02",
+         "Changing the Company's business and supply chain in accordance with new or changed "
+         "restrictions on international trade can be expensive, time-consuming and disruptive."),
+        (510, "10-K", "2024-11-01",
+         "Tensions between governments, including the U.S. and China, have in the past led to "
+         "tariffs and other restrictions affecting the Company's business, and could do so again."),
+    ]
+
+    def mk(i, form, date, text):
+        return {"id": i, "form": form, "filing_date": date, "text": text,
+                "section": "mdna", "url": "u"}
+
+    # Relevance order as retrieved: all six versions outrank the 2024 passage.
+    ranked = [mk(*v) for v in versions] + [mk(*o) for o in other]
+    k = 5
+    without = ranked[:k]
+    kept = collapse_versions(ranked, k)
+    ids = [p["id"] for p in kept]
+    by_id = {p["id"]: p for p in kept}
+    span = by_id.get(33, {}).get("span") or {}
+
+    prompt = ask.format_passages(kept)
+
+    return show({
+        "before: top 5 are all versions of one paragraph, no 2024 passage":
+            all(p["id"] in {v[0] for v in versions} for p in without),
+        "after: earliest (389) and latest (33) versions kept": 389 in ids and 33 in ids,
+        "after: unchanged middle copies dropped (332, 291, 106)": not {332, 291, 106} & set(ids),
+        "after: version with a sentence later dropped (149, Section 232) kept": 149 in ids,
+        "after: freed slots reach other paragraphs, incl. Section 301 (34)": 34 in ids,
+        "span records 6 versions, 2025-05-02 to 2026-07-31":
+            span.get("versions") == 6 and span.get("first", (0, 0))[1] == "2025-05-02"
+            and span.get("last", (0, 0))[1] == "2026-07-31",
+        "paragraphs sharing only boilerplate are not merged":
+            by_id.get(34, {}).get("span") is None,
+        "never more than k passages": len(kept) <= k,
+        "model is told the span": "appears in 6 filings" in prompt,
+        "with room, the 2024 passage gets in": 510 in [p["id"] for p in collapse_versions(ranked, 7)],
+    }, "collapsing repeated paragraphs")
+
+
+def test_relevance_bar_and_query():
+    """
+    From the second live run: collapsing freed slots that went to regional
+    net-sales paragraphs, while a November 2024 passage containing "tariffs"
+    ranked 47th because "last two years" swamped the keyword search.
+    """
+    def mk(i, date, text):
+        return {"id": i, "form": "10-Q", "filing_date": date, "text": text,
+                "section": "mdna", "url": "u"}
+
+    tariff = ("Beginning in the second quarter of 2025, new tariffs were announced on imports "
+              "to the U.S., including additional tariffs on imports from China and other "
+              "countries, which can affect the Company's gross margin.")
+    ranked = (
+        [mk(100 + n, d, tariff) for n, d in enumerate(
+            ["2025-05-02", "2025-08-01", "2025-10-31", "2026-01-30"])]        # 4 copies in top 5
+        + [mk(200, "2026-07-31", "Various modifications to U.S. tariffs have been announced, "
+                                 "including tariffs under Section 301 of the Trade Act of 1974.")]
+        + [mk(300, "2026-05-01", "Greater China net sales increased during the second quarter "
+                                 "compared to the same period in 2025 due to higher net sales of iPhone.")]
+        + [mk(400, "2024-11-01", "Tensions between governments, including the U.S. and China, have "
+                                 "in the past led to tariffs and other restrictions affecting the "
+                                 "Company's business.")]
+    )
+    on_topic = {p["id"] for p in ranked if "tariff" in p["text"]}
+    gated = [p["id"] for p in collapse_versions(ranked, 5, eligible_extra=on_topic)]
+    ungated = [p["id"] for p in collapse_versions(ranked, 5)]
+
+    return show({
+        "time words dropped: '...tariffs over the last two years?' -> tariffs only":
+            store.fts_query("What has Apple said about tariffs over the last two years?") == '"tariffs"',
+        "capitalised acronyms kept: 'AI', 'EU'":
+            '"ai"' in store.fts_query("How has Apple described AI risks?")
+            and '"eu"' in store.fts_query("Which EU law applies?"),
+        "lower-case two-letter filler still dropped": store.fts_query("what is it on") is None,
+        "each method keeps more than 50 results": store.RANK_DEPTH > 50,
+        "without the bar, the off-topic sales paragraph takes a freed slot": 300 in ungated,
+        "with the bar, it does not": 300 not in gated,
+        "with the bar, the on-topic 2024 passage gets the slot": 400 in gated,
+        "original top-k passages are never filtered out": 200 in gated,
+    }, "relevance bar and keyword query")
+
+
+def test_truncated_reply_refused():
+    """From a live run: the answer outgrew max_tokens and the JSON was cut off."""
+    from summarise import TruncatedResponse
+
+    class CutOff(FakeClient):
+        def create(self, **kwargs):
+            self.sent = kwargs
+            return SimpleNamespace(
+                content=[SimpleNamespace(type="text", text='{"coverage": "answered", "answer": "Apple first')],
+                usage=SimpleNamespace(input_tokens=5000, output_tokens=1500),
+                stop_reason="max_tokens")
+
+    conn, emb = build_db()
+    client = CutOff({})
+    try:
+        ask.ask(client, conn, emb, "AAPL", "tariffs", k=5, model="claude-sonnet-5-5")
+        raised, message = False, ""
+    except TruncatedResponse as e:
+        raised, message = True, str(e)
+    return show({
+        "cut-off reply raises TruncatedResponse, not a JSON parse error": raised,
+        "error says what happened and what to do": "max_tokens" in message and "Raise" in message,
+        "answers have room: cap well above the 1,465 tokens a real answer used":
+            client.sent.get("max_tokens", 0) >= 4000,
+    }, "truncated replies")
+
+
 if __name__ == "__main__":
     results = [test_chunking(), test_storage_and_sql(), test_search(),
                test_ask_verification(), test_not_in_sources(), test_eval(),
-               test_ingest_skips_indexed()]
+               test_ingest_skips_indexed(), test_collapse_versions(),
+               test_relevance_bar_and_query(), test_truncated_reply_refused()]
     print(f"\n{sum(results)}/{len(results)} checks passed")

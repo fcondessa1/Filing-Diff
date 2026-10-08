@@ -371,18 +371,59 @@ claim true, so the answer lists the passages it rests on.
 **Model choice is the defence against omissions.** Haiku and Sonnet were
 asked the same question ("what has Apple said about tariffs over the last two
 years?") with the same 12 passages, so any difference came from the model.
-Both verified 5 of 5 claims. But Haiku left out the new tariffs imposed under
-Section 122 and Section 301, which were in the passages it was shown, and
-ended on the Supreme Court refunds, implying tariffs were being wound down.
-Sonnet named both and ended on the latest position. A citation check proves
-what the model said is in the sources, not that it said everything important,
-so `ask.py` defaults to Sonnet (about 2.4 cents a question against 0.9). The
-summariser's 63 calls per filing stay on Haiku.
+Every run verified all its claims. But Haiku left out the new tariffs
+imposed under Section 122 and Section 301, which were in the passages it was
+shown, and ended on the Supreme Court refunds, implying tariffs were being
+wound down. Sonnet ended on the latest position in both of two runs and named
+Section 301 both times, but Section 122 only once. The same model, prompt and
+passages gave different answers from one run to the next, so a single run per
+model is not a comparison. A citation check proves what the model said is in
+the sources, not that it said everything important. `ask.py` defaults to
+Sonnet (about 2.4 cents a question against 0.9) because it omitted less, but
+that reduces omissions rather than preventing them. The summariser's 63 calls
+per filing stay on Haiku.
 
 Neither model reached back before May 2025, though the database holds the
 November 2024 10-K, which did discuss tariffs. Six of the 12 passages were
 the same paragraph repeated across six filings, which crowded out the older
 material. That is a retrieval problem no model can fix.
+
+**Fix: collapse repeated paragraphs.** Companies carry paragraphs forward
+from filing to filing, editing a sentence each time. `ask.py` now retrieves
+40 candidates and groups versions of the same paragraph: two passages are
+versions when one's content words are at least 80% contained in the other's.
+Containment rather than Jaccard, because a paragraph that grows each quarter
+still contains its earlier versions while its Jaccard against them falls.
+Each group keeps its earliest and latest version, plus any in-between version
+that says something neither of those does (e.g. a sentence added one quarter
+and dropped later), and the model is told the span: "a version of this
+paragraph appears in 6 filings, from the 10-Q filed 2025-05-02 to the 10-Q
+filed 2026-07-31". The freed slots go to the next distinct passages. The
+retrieval evaluation still measures raw search, so its scores stay
+comparable.
+
+The first run with collapsing cut the copies from six to three and brought
+in three useful new passages, but four of the twelve slots went to regional
+net-sales paragraphs with nothing to do with tariffs. The November 2024
+10-K's tariff passages were still missing. They were in the database (an FTS
+query for "tariffs" before May 2025 found two), so the question was where
+search ranked them. Meaning search put one at 27, inside the 40 candidates;
+combined search dropped it to 47, because keyword search had not found it in
+its top 50. The keyword query was the cause: "What has Apple said about
+tariffs over the last two years?" became `tariffs OR last OR two OR years`,
+and paragraphs comparing "the same period last year" swamped the one topic
+word. Three changes followed:
+
+- Words that set a question's time range (last, years, recent, quarter…) are
+  no longer keyword search terms. The time range is handled by the filing
+  dates shown with each passage.
+- Each search method keeps 200 results before fusion instead of 50.
+- Slots freed by collapsing go only to passages containing a topic word from
+  the question. The original top 12 are never filtered.
+
+Checking the query builder also turned up an older bug: words under three
+letters were dropped, which removed acronyms such as "AI" and "EU". Two-letter
+words written in capitals are now kept.
 
 ## Threshold provenance
 
