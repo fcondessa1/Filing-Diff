@@ -406,9 +406,52 @@ def test_truncated_reply_refused():
     }, "truncated replies")
 
 
+def test_numbers_distinguish_versions():
+    """
+    From the third live run: the May 2026 version of a tariff paragraph named
+    Section 122, the July 2026 version Section 301. Comparing letters only,
+    they were identical, the May version was dropped, and the answer lost
+    Section 122.
+    """
+    def mk(i, date, text):
+        return {"id": i, "form": "10-Q", "filing_date": date, "text": text,
+                "section": "mdna", "url": "u"}
+
+    tail = (" and further changes could be made. The ultimate impact remains uncertain and will "
+            "depend on several factors, including the overall magnitude and duration of these measures.")
+    mods = [
+        mk(1, "2025-05-02", "Various modifications to U.S. tariffs have been announced," + tail),
+        mk(2, "2026-05-01", "Various modifications to U.S. tariffs have been announced, including the "
+                            "imposition of tariffs under Section 122 of the Trade Act of 1974," + tail),
+        mk(3, "2026-07-31", "Various modifications to U.S. tariffs have been announced, including the "
+                            "recent imposition of tariffs under Section 301 of the Trade Act of 1974," + tail),
+    ]
+    margin = ("Products gross margin increased during the {q} quarter of {y} compared to the {q} "
+              "quarter of {p} due primarily to a different mix of products, partially offset by tariffs.")
+    quarterly = [
+        mk(11, "2025-08-01", margin.format(q="third", y=2025, p=2024)),
+        mk(12, "2026-01-30", margin.format(q="first", y=2026, p=2025)),
+        mk(13, "2026-05-01", margin.format(q="second", y=2026, p=2025)),
+    ]
+    kept_mods = {p["id"] for p in collapse_versions(mods, 10)}
+    kept_q = {p["id"] for p in collapse_versions(quarterly, 10)}
+    words = store._content_words("Section 122 of the Trade Act of 1974")
+
+    return show({
+        "numbers count as content words": "122" in words,
+        "the Section 122 version (May 2026) is kept": 2 in kept_mods,
+        "the Section 301 version (latest) is kept": 3 in kept_mods,
+        "quarter-to-quarter edits with rolled-forward years still collapse to one copy":
+            kept_q == {13},
+        "years alone are not 'new numbers'":
+            not store._new_numbers({"2026", "gross"}, {"2025", "gross"}),
+    }, "numbers distinguish versions")
+
+
 if __name__ == "__main__":
     results = [test_chunking(), test_storage_and_sql(), test_search(),
                test_ask_verification(), test_not_in_sources(), test_eval(),
                test_ingest_skips_indexed(), test_collapse_versions(),
-               test_relevance_bar_and_query(), test_truncated_reply_refused()]
+               test_relevance_bar_and_query(), test_truncated_reply_refused(),
+               test_numbers_distinguish_versions()]
     print(f"\n{sum(results)}/{len(results)} checks passed")

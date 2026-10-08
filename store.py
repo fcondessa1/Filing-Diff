@@ -350,9 +350,33 @@ ADDS_CONTENT = 0.90
 CANDIDATES = 40
 
 
+_WORD_OR_NUMBER = re.compile(r"[a-z0-9]+")
+_YEAR = re.compile(r"^(19|20)\d\d$")
+
+
 def _content_words(text: str) -> set[str]:
-    from diff2 import _tokens
-    return _tokens(text)
+    """
+    Content words AND numbers. The diff's tokenizer keeps letters only, which
+    made "Section 122 of the Trade Act of 1974" and "Section 301 of the Trade
+    Act of 1974" identical: the May 2026 version of a tariff paragraph (naming
+    Section 122) was dropped as an unchanged copy of the July 2026 version
+    (naming Section 301), and the model never saw Section 122.
+    """
+    from diff2 import STOPWORDS
+    # Four-digit years are left out: they roll forward every filing ("the
+    # third quarter of 2025 compared to 2024") and, counted as words, pushed
+    # unchanged quarterly paragraphs under the same-version threshold.
+    return {w for w in _WORD_OR_NUMBER.findall(text.lower())
+            if w not in STOPWORDS and (len(w) > 2 or w.isdigit()) and not _YEAR.match(w)}
+
+
+def _new_numbers(a: set[str], b: set[str]) -> set[str]:
+    """
+    Numbers in a but not in b, ignoring four-digit years. Years roll forward
+    every filing ("2025" -> "2026") without saying anything new; section
+    numbers, dates and amounts do say something new.
+    """
+    return {w for w in a - b if w.isdigit() and not _YEAR.match(w)}
 
 
 def _contained(a: set[str], b: set[str]) -> float:
@@ -403,14 +427,19 @@ def collapse_versions(passages: list[dict], k: int,
         keep = [dated[0]] if len(dated) == 1 else [dated[0], dated[-1]]
         if len(dated) > 1:
             first, last = words[dated[0]["id"]], words[dated[-1]["id"]]
-            if _contained(last, first) >= ADDS_CONTENT and _contained(first, last) >= ADDS_CONTENT:
+            if (_contained(last, first) >= ADDS_CONTENT and _contained(first, last) >= ADDS_CONTENT
+                    and not _new_numbers(first, last)):
                 keep = [dated[-1]]             # essentially unchanged: one copy
         if len(dated) > 2:
             union = set().union(*(words[p["id"]] for p in keep))
             for mid in dated[1:-1]:
-                if _contained(words[mid["id"]], union) < ADDS_CONTENT:
+                mw = words[mid["id"]]
+                # Kept if it adds content, or a number nothing kept so far has:
+                # one new section number changes the meaning but barely moves
+                # a containment ratio.
+                if _contained(mw, union) < ADDS_CONTENT or _new_numbers(mw, union):
                     keep.append(mid)
-                    union |= words[mid["id"]]
+                    union |= mw
         span = {"versions": len(dated),
                 "first": (dated[0]["form"], dated[0]["filing_date"]),
                 "last": (dated[-1]["form"], dated[-1]["filing_date"])}

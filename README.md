@@ -425,6 +425,31 @@ Checking the query builder also turned up an older bug: words under three
 letters were dropped, which removed acronyms such as "AI" and "EU". Two-letter
 words written in capitals are now kept.
 
+**Result** on the same question, same model (Sonnet):
+
+| | before | after |
+|---|---|---|
+| earliest filing in the answer | May 2025 | November 2024 |
+| copies of the main tariff paragraph | 6 | 3 |
+| off-topic passages | 0 | 0 |
+| claims, all verified | 5 | 8 |
+| effect of tariffs on results | not mentioned | "partially offset" margin gains in Q3 2025; refunds lifted margins in 2026 |
+
+The answer now opens with the November 2024 10-K ("tensions between
+governments, including the U.S. and China, have in the past led to tariffs")
+before moving to the 2025 tariffs. The two gross-margin passages it gained
+show what tariffs did to Apple's results, not only what they might do, and
+they had been crowded out by copies.
+
+That run also lost Section 122, for a reason in the collapsing itself. The
+May 2026 version of one paragraph named Section 122 and the July 2026
+version Section 301, but the comparison used the diff's tokenizer, which
+keeps letters only, so the two versions looked identical and the May one was
+dropped. Numbers now count, except four-digit years, which roll forward each
+filing without saying anything new. An in-between version is also kept if it
+contains a number that no kept version has, since one new section number
+changes the meaning without moving a similarity ratio much.
+
 ## Threshold provenance
 
 Not eyeballed. `tune.py` sweeps each metric and reports how the buckets move.
