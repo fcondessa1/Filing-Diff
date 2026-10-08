@@ -197,6 +197,24 @@ def test_force_latest(tmp):
     }, "force latest")
 
 
+def test_10k_extraction_failure(tmp):
+    fresh_dirs(tmp, "k_fail")
+    w = World()
+    k24, k25 = filing("k24", "10-K", "2024-11-01"), filing("k25", "10-K", "2025-10-31")
+    w.filings["NVDA"] = [k25, k24]
+    w.texts = {k24["url"]: RISK_OLD, k25["url"]: None}
+    w.install()
+    digest.save_state({"NVDA": ["k24"]})
+    path, news, title = digest.run(FakeClient(), "claude-haiku-4-5-20251001", ["NVDA"], today="2025-11-03")
+    text = path.read_text()
+    return show({
+        "missing Risk Factors in a 10-K is reported as a parsing failure":
+            "Could not extract Risk Factors" in text and "parsing failure" in text,
+        "not explained away as 'no material changes'": "no material changes" not in text,
+        "the issue title flags it": "(extraction failed)" in title,
+    }, "10-K extraction failure")
+
+
 if __name__ == "__main__":
     tmp = Path(tempfile.mkdtemp())
     saved = (edgar.get_cik, edgar.list_filings, digest.risk_factors,
@@ -204,7 +222,8 @@ if __name__ == "__main__":
     cwd = os.getcwd()
     try:
         results = [test_watchlist(tmp), test_first_run_and_quiet_week(tmp), test_new_10q(tmp),
-                   test_missing_section_and_errors(tmp), test_force_latest(tmp)]
+                   test_missing_section_and_errors(tmp), test_force_latest(tmp),
+                   test_10k_extraction_failure(tmp)]
     finally:
         (edgar.get_cik, edgar.list_filings, digest.risk_factors,
          digest.DIGEST_DIR, digest.STATE_PATH, summarise.CACHE_DIR) = saved

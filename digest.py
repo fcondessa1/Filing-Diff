@@ -122,9 +122,18 @@ def process_filing(client, model: str, filing: dict, previous: dict | None) -> d
 
     new_text, old_text = risk_factors(filing["url"]), risk_factors(previous["url"])
     if not new_text or not old_text:
-        which = "this filing" if not new_text else f"the {previous['form']} filed {previous['filing_date']}"
-        return {**base, "note": f"No Risk Factors section found in {which}. 10-Qs often state only "
-                                f"that there were no material changes."}
+        missing = filing if not new_text else previous
+        which = "this filing" if missing is filing else f"the {previous['form']} filed {previous['filing_date']}"
+        if missing["form"] == "10-K":
+            # Every 10-K must include Risk Factors, so a missing section is an
+            # extraction failure, not news about the company. The extractor was
+            # tuned on Apple's filings; other filers' HTML can defeat it.
+            note = (f"**Could not extract Risk Factors from {which}.** Every 10-K includes them, "
+                    f"so this is a parsing failure, not a change. Check the filing by hand.")
+        else:
+            note = (f"No Risk Factors section found in {which}. 10-Qs often state only that "
+                    f"there were no material changes.")
+        return {**base, "note": note, "extraction_failed": missing["form"] == "10-K"}
 
     changes, skipped = collect_changes(old_text, new_text)
     rows = [summarise_change(client, model, c) for c in changes]
@@ -196,7 +205,8 @@ def write_digest(date: str, results: dict[str, list[dict]], errors: dict[str, st
     (DIGEST_DIR / f"{date}.json").write_text(json.dumps(
         {t: rs for t, rs in results.items()}, ensure_ascii=False, indent=1, default=str))
 
-    parts = [f"{t} {r['filing']['form']}" for t, r in processed] + [f"{t} error" for t in errors]
+    parts = [f"{t} {r['filing']['form']}" + (" (extraction failed)" if r.get("extraction_failed") else "")
+             for t, r in processed] + [f"{t} error" for t in errors]
     title = f"Filing digest {date}: " + (", ".join(parts) if parts else "nothing new")
     return path, news, title
 
