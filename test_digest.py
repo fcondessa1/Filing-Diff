@@ -127,9 +127,9 @@ def test_new_10q(tmp):
 
     return show({
         "new 10-Q is news; issue title names it": news and "AAPL 10-Q" in title,
-        "compared with the previous 10-Q, not the 10-K": "vs 10-Q filed 2026-01-30" in text,
+        "compared with the previous 10-Q, not the 10-K": "(vs 10-Q of 30 Jan 2026)" in text,
         "the added risk is summarised": "age verification" in text and client.calls >= 1,
-        "summary shown with materiality": "HIGH" in text,
+        "high-materiality change listed under High importance": "## 🔴 High importance (1)" in text,
         "the model is told whose filing it is": client.sent and "COMPANY: AAPL" in client.sent[0],
         "filing recorded as processed": "q2" in state["AAPL"],
         "previous-of-same-form skips the 10-K": digest.previous_of_same_form([q2, q1, k25], q2) == q1
@@ -174,7 +174,7 @@ def test_missing_section_and_errors(tmp):
             "No changes reported" in text and "no material changes to the risk factors" in text
             and client.calls == 0,
         "one ticker failing does not stop the others": "AAPL 10-Q" in title and "MSFT error" in title,
-        "the error is in the digest": "## Errors" in text and "EDGAR unreachable" in text,
+        "the error is in the digest": "**Errors**" in text and "EDGAR unreachable" in text,
         "errors count as news (so you hear about them)": news and news2,
         "a filing that failed to process is not recorded, so it is retried":
             "q2" not in state2["AAPL"],
@@ -340,6 +340,51 @@ def test_updates_only(tmp):
     }, "updates-only 10-Q")
 
 
+def test_layout(tmp):
+    fresh_dirs(tmp, "layout")
+    w = World()
+    q1, q2 = filing("q1", "10-Q", "2026-05-07"), filing("q2", "10-Q", "2026-08-10")
+    w.filings["IONQ"] = [q2, q1]
+    w.texts = {q1["url"]: RISK_OLD, q2["url"]: RISK_NEW}
+    w.install()
+    digest.save_state({"IONQ": ["q1"]})
+
+    class StoryClient(FakeClient):
+        def create(self, **kwargs):
+            if "headline" in json.dumps(kwargs.get("output_config", {})):
+                self.calls += 1
+                story = {"headline": "New online-safety rules",
+                         "story": "The company added a risk about age verification laws."}
+                return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(story))],
+                                       usage=SimpleNamespace(input_tokens=300, output_tokens=40),
+                                       stop_reason="end_turn")
+            return super().create(**kwargs)
+
+    path, _, _ = digest.run(StoryClient(), "claude-haiku-4-5-20251001", ["IONQ"], today="2026-08-12")
+    text = path.read_text()
+    broken, _, _ = (None, None, None)
+    fresh_dirs(tmp, "layout_nostory")
+    w.install()
+    digest.save_state({"IONQ": ["q1"]})
+    path2, _, _ = digest.run(FakeClient(), "claude-haiku-4-5-20251001", ["IONQ"], today="2026-08-12")
+    text2 = path2.read_text()
+    return show({
+        "an at-a-glance table opens the digest": "| Company | Filing | What changed | 🔴 High | 🟡 Medium | ⚪ Low |" in text,
+        "the headline appears in the table and the story under the company":
+            "New online-safety rules" in text and "> The company added a risk about age" in text,
+        "summaries lose the 'The company added a new risk factor regarding' opening":
+            digest.short_summary("The company added a new risk factor regarding long and "
+                                 "unpredictable sales cycles for the SkyWater business.")
+            == "Long and unpredictable sales cycles for the SkyWater business."
+            and digest.short_summary("The company added disclosure that legal demands for "
+                                     "customer data are increasing.")
+            == "Legal demands for customer data are increasing.",
+        "dates are readable": "10 Aug 2026" in text,
+        "technical detail is folded away": "<details><summary>Run details</summary>" in text,
+        "without a story the digest still works": "| **IONQ** |" in text2 and "High importance" in text2,
+    }, "readable layout")
+
+
 if __name__ == "__main__":
     tmp = Path(tempfile.mkdtemp())
     saved = (edgar.get_cik, edgar.list_filings, digest.risk_factors,
@@ -349,7 +394,8 @@ if __name__ == "__main__":
         results = [test_watchlist(tmp), test_first_run_and_quiet_week(tmp), test_new_10q(tmp),
                    test_missing_section_and_errors(tmp), test_force_latest(tmp),
                    test_10k_extraction_failure(tmp), test_updates_after_no_changes(tmp),
-                   test_join_fragments(tmp), test_updates_only(tmp)]
+                   test_join_fragments(tmp), test_updates_only(tmp),
+                   test_layout(tmp)]
     finally:
         (edgar.get_cik, edgar.list_filings, digest.risk_factors,
          digest.DIGEST_DIR, digest.STATE_PATH, summarise.CACHE_DIR) = saved

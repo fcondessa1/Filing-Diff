@@ -463,6 +463,17 @@ verified), commits `results/digests/<date>.md`, and opens a GitHub issue,
 which GitHub emails to the repository owner. Filings arrive about once a
 quarter per company, so most weeks report nothing new and make no API calls.
 
+The digest is written to be skimmed and is ordered by importance, not by
+company. It opens with a table: one row per new filing, a headline, and its
+number of high, medium and low-importance changes. Then come all companies'
+high-importance changes, each company with a one- or two-sentence story and
+one line per change; then the medium ones, folded under each company's name;
+then a count of minor wording changes; then filings with nothing new and
+risks not repeated (folded), and the cost and verification counts (folded). The
+headline and story are written by the model from the already-checked
+summaries, not from the filing, so they carry no quotes of their own; a ⚠️
+next to a change marks a summary whose quote was not found in the filing.
+
 Design decisions:
 
 - **10-Q is compared with 10-Q, not with the last 10-K.** Many 10-Qs' Risk

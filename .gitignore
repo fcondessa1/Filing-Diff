@@ -5,23 +5,24 @@ __pycache__/
 venv/
 .ipynb_checkpoints/
 
-# Secrets — never commit an API key
+# Secrets: never commit an API key
 .env
 *.key
 
-# Cached filings: large, regenerable, and they bloat the repo fast.
-# Commit ONE small sample filing instead so the repo is runnable.
+# Downloaded filings, the SQLite database and cached model answers:
+# large, regenerable, and they bloat the repo fast.
 data/
 filings/
+cache/
 *.html
+
+# Scratch output (diagnosis.txt, joining.txt...) in the repo root,
+# except the two text files the project needs.
+/*.txt
+!/watchlist.txt
+!/requirements*.txt
 
 # OS / editor
 .DS_Store
 .vscode/
 .idea/
-/*.txt
-cache/
-!/watchlist.txt
-!/requirements*.txt
-!/watchlist.txt
-!/requirements*.txt

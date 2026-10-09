@@ -312,9 +312,8 @@ def process_filing(client, model: str, filing: dict, previous: dict | None,
     note = None
     if is_statement(old_text):
         old_text = ""
-        note = (f"The {previous['form']} filed {previous['filing_date']} reported no changes to "
-                f"its risk factors, so every risk factor in this filing's section is new since "
-                f"then and is listed as added.")
+        note = (f"The previous {previous['form']} ({nice_date(previous['filing_date'])}) reported "
+                f"no changes to its risk factors, so every risk listed here is new since then.")
 
     changes, skipped = collect_changes(join_fragments(old_text), join_fragments(new_text))
     left_out = []
@@ -342,53 +341,222 @@ def first_sentence(text: str, limit: int = 140) -> str:
     return head if len(head) <= limit else head[:limit].rsplit(" ", 1)[0] + "…"
 
 
-def filing_section(ticker: str, result: dict, model: str) -> list[str]:
-    from summarise import BADGE, ORDER, cost_usd, row_label
+# --------------------------------------------------------------------------- #
+# A one-line story per company
+# --------------------------------------------------------------------------- #
 
-    f, prev = result["filing"], result["previous"]
-    against = f" vs {prev['form']} filed {prev['filing_date']}" if prev else ""
-    lines = [f"### {ticker} {f['form']} filed {f['filing_date']}{against}",
-             "", f"[Filing on EDGAR]({f['url']})", ""]
-    if result["note"]:
-        lines += [result["note"], ""]
-    left_out = result.get("not_repeated") or []
-    if left_out:
-        if result.get("cites_previous_10q"):
-            why = ("This filing lists only updates and says the risk factors in the 10-K and "
-                   "earlier 10-Qs still stand, so these were not updated again, not removed:")
-        else:
-            why = ("This filing lists only updates since the 10-K and does not say whether the "
-                   "previous 10-Q's updates still stand. Most likely they were not updated "
-                   "again rather than removed; check the filing if one matters to you:")
-        lines += [f"{len(left_out)} risk factors from the previous {prev['form']} are not "
-                  f"repeated. {why}", ""]
-        lines += [f"- {first_sentence(t)}" for t in left_out] + [""]
-    if not result["rows"]:
-        return lines
+STORY_PROMPT = """You write the opening line of a weekly digest of changes to companies' Risk Factors, for an individual investor skimming it.
+
+You get the changes found in one company's latest filing, each already summarised and checked against the filing. Use only these summaries.
+
+- headline: at most 12 words, plain English, no ticker, no "the company". Name the main theme; if there is none, the most important change.
+- story: one or two sentences on what changed and why it might matter. Say "removed" only for changes listed as REMOVED or PARTLY REMOVED. Keep "could" and "may": these are risks, not events."""
+
+STORY_SCHEMA = {
+    "type": "object",
+    "properties": {"headline": {"type": "string"}, "story": {"type": "string"}},
+    "required": ["headline", "story"],
+    "additionalProperties": False,
+}
+
+
+def add_story(client, model: str, ticker: str, result: dict) -> None:
+    """
+    A headline and a one- or two-sentence story for the top of a company's
+    section, written from the checked summaries (not from the filing, so it
+    has no quotes of its own to verify). Cached like the summaries. On any
+    failure the digest falls back to counts.
+    """
+    import hashlib
+    from summarise import CACHE_DIR, ORDER, response_json, row_label
 
     rows = sorted(result["rows"], key=lambda r: ORDER.get(r["materiality"], 3))
-    by_level = {lvl: [r for r in rows if r["materiality"] == lvl] for lvl in ("high", "medium", "low")}
-    verified = sum(r["check"]["status"] == "VERIFIED" for r in rows)
-    cost = cost_usd(model, sum(r["input_tokens"] for r in rows), sum(r["output_tokens"] for r in rows))
-    lines += [
-        f"{len(rows)} changes: {len(by_level['high'])} high, {len(by_level['medium'])} medium, "
-        f"{len(by_level['low'])} low materiality. Quotes verified for {verified} of {len(rows)}."
-        + (f" {len(result['skipped'])} merge artifacts skipped." if result["skipped"] else "")
-        + (f" Cost ${cost:.3f}." if cost is not None else ""),
-        "",
-    ]
-    for level in ("high", "medium"):
-        for r in by_level[level]:
-            status = r["check"]["status"]
-            flags = "" if status == "VERIFIED" else f" **[{BADGE[status]}]**"
-            if r["check"].get("verdict_supported") is False:
-                flags += " **[VERDICT UNSUPPORTED]**"
-            lines.append(f"- **{level.upper()} · {row_label(r)}**{flags} {r['summary']}")
-            lines.append(f"  - {r['materiality_reason']}")
-    if by_level["low"]:
-        lines.append(f"- {len(by_level['low'])} low-materiality wording changes "
-                     f"(listed in the JSON alongside this digest).")
-    return lines + [""]
+    rows = [r for r in rows if r["materiality"] in ("high", "medium")] or rows
+    if not rows:
+        return
+    listing = "\n".join(f"- [{r['materiality'].upper()}] {row_label(r)}: {r['summary']}"
+                         for r in rows[:25])
+    message = f"COMPANY: {ticker}\nFILING: {result['filing']['form']}\n\nCHANGES:\n{listing}"
+    key = hashlib.sha256(json.dumps(["story-v1", model, message]).encode()).hexdigest()[:24]
+    path = CACHE_DIR / f"story_{key}.json"
+    try:
+        if path.exists():
+            parsed = json.loads(path.read_text())
+        else:
+            response = client.messages.create(
+                model=model, max_tokens=400, system=STORY_PROMPT,
+                messages=[{"role": "user", "content": message}],
+                output_config={"format": {"type": "json_schema", "schema": STORY_SCHEMA}})
+            parsed = response_json(response)
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(parsed))
+        if parsed.get("headline") and parsed.get("story"):
+            result["headline"], result["story"] = parsed["headline"], parsed["story"]
+    except Exception as e:  # the story is a convenience; never fail the digest over it
+        print(f"{ticker}: no story ({type(e).__name__}: {e})")
+
+
+# --------------------------------------------------------------------------- #
+# Writing the digest
+# --------------------------------------------------------------------------- #
+
+KIND_LABEL = {"added": "New", "modified": "Changed"}
+VERDICT_SHORT = {"removed": "Removed", "partially_removed": "Partly removed",
+                 "moved_or_reworded": "Reworded"}
+_BOILERPLATE = re.compile(
+    r"^(the )?company (has )?(added|disclosed|introduced)\s+"
+    r"(an? )?(new )?(specific )?(risk factor|risk disclosure|disclosure|risk|language)?s?\s*"
+    r"(regarding|about|on|concerning|addressing|related to|disclosing|describing|"
+    r"highlighting|detailing|that|of)?\s*(that\s+)?", re.IGNORECASE)
+
+
+def short_summary(text: str) -> str:
+    """Drop the "The company added a new risk factor regarding" opening the
+    label already says, and keep the rest."""
+    cut = _BOILERPLATE.sub("", text.strip(), count=1)
+    if len(cut) < 25:
+        return text
+    return cut[0].upper() + cut[1:]
+
+
+def nice_date(iso: str) -> str:
+    d = dt.date.fromisoformat(iso)
+    return f"{d.day} {d.strftime('%b %Y')}"
+
+
+def change_label(r: dict) -> str:
+    if r["kind"] == "removed":
+        return VERDICT_SHORT.get(r.get("verdict"), "Removed")
+    return KIND_LABEL.get(r["kind"], r["kind"].title())
+
+
+def change_line(r: dict) -> str:
+    flags = []
+    if r["check"]["status"] != "VERIFIED":
+        flags.append("quote not found in filing" if r["check"]["status"] == "UNSUPPORTED"
+                     else "one quote not found in filing")
+    if r["check"].get("verdict_supported") is False:
+        flags.append("verdict not supported by a quote")
+    warn = f" ⚠️ _{'; '.join(flags)}_" if flags else ""
+    return f"- **{change_label(r)}** · {short_summary(r['summary'])}{warn}"
+
+
+def counts(result: dict) -> dict:
+    rows = result["rows"]
+    return {lvl: sum(r["materiality"] == lvl for r in rows) for lvl in ("high", "medium", "low")}
+
+
+LEVELS = [("high", "🔴 High importance"), ("medium", "🟡 Medium importance"),
+          ("low", "⚪ Low importance")]
+
+
+def at_a_glance(ticker: str, result: dict) -> str:
+    f = result["filing"]
+    c = counts(result)
+    if result.get("extraction_failed"):
+        what = "⚠️ Could not read Risk Factors"
+    elif result.get("headline"):
+        what = result["headline"]
+    elif result["rows"]:
+        n = len(result["rows"])
+        what = f"{n} change{'s' if n > 1 else ''}"
+    elif result.get("not_repeated"):
+        what = "Nothing new; some earlier updates not repeated"
+    else:
+        what = "No changes"
+    nums = " | ".join(str(c[lvl]) if result["rows"] else "–" for lvl, _ in LEVELS)
+    return (f"| **{ticker}** | {f['form']}, {nice_date(f['filing_date'])} | {what} | {nums} |")
+
+
+def company_heading(ticker: str, result: dict) -> str:
+    f, prev = result["filing"], result["previous"]
+    vs = f" (vs {prev['form']} of {nice_date(prev['filing_date'])})" if prev else ""
+    return (f"### {ticker} · {f['form']}, {nice_date(f['filing_date'])}{vs} · "
+            f"[filing]({f['url']})")
+
+
+def importance_section(level: str, title: str, processed: list[tuple[str, dict]]) -> list[str]:
+    """Every company's changes at one importance level, grouped by company."""
+    from summarise import ORDER
+
+    groups = [(t, r, [x for x in r["rows"] if x["materiality"] == level]) for t, r in processed]
+    groups = [(t, r, rows) for t, r, rows in groups if rows]
+    if not groups:
+        return []
+    total = sum(len(rows) for _, _, rows in groups)
+    lines = [f"## {title} ({total})", ""]
+    if level == "low":
+        # Wording changes: counts only, the text is in the JSON.
+        lines += [", ".join(f"**{t}** {len(rows)}" for t, _, rows in groups)
+                  + ". Minor wording changes; listed in the JSON file next to this digest.", ""]
+        return lines
+    for t, r, rows in groups:
+        # A company's story, note and filing link go with its most important
+        # changes. Below that level its changes are folded under its name, so
+        # the medium section reads as a list of companies to open.
+        top = next(lvl for lvl, _ in LEVELS if any(x["materiality"] == lvl for x in r["rows"]))
+        if level == top:
+            lines += [company_heading(t, r), ""]
+            if r.get("story"):
+                lines += [f"> {r['story']}", ""]
+            if r["note"]:
+                lines += [r["note"], ""]
+            lines += [change_line(x) for x in rows] + [""]
+        else:
+            lines += [f"<details><summary><b>{t}</b> · {len(rows)} change"
+                      f"{'s' if len(rows) > 1 else ''}</summary>", ""]
+            lines += [change_line(x) for x in rows] + ["", "</details>", ""]
+    return lines
+
+
+def nothing_new_section(processed: list[tuple[str, dict]]) -> list[str]:
+    """Filings with no changes, failed extractions, and risks not repeated."""
+    lines = []
+    for t, r in processed:
+        only_low = r["rows"] and all(x["materiality"] == "low" for x in r["rows"])
+        if (not r["rows"] or only_low) and (r["note"] or r.get("extraction_failed")):
+            lines += [company_heading(t, r), "", r["note"] or "", ""]
+    for t, r in processed:
+        left_out = r.get("not_repeated") or []
+        if not left_out:
+            continue
+        if r.get("cites_previous_10q"):
+            why = ("The filing lists only updates and says everything in the 10-K and earlier "
+                   "10-Qs still stands, so these were not updated again, not removed.")
+        else:
+            why = ("The filing lists only updates since the 10-K and does not say whether the "
+                   "previous 10-Q's updates still stand. Most likely they were not updated "
+                   "again rather than removed; check the filing if one matters to you.")
+        lines += [f"<details><summary><b>{t}</b>: {len(left_out)} risks from the previous "
+                  f"{r['previous']['form']} not repeated (still stand)</summary>", "", why, ""]
+        lines += [f"- {first_sentence(x)}" for x in left_out] + ["", "</details>", ""]
+    return (["## No changes and other notes", ""] + lines) if lines else []
+
+
+def run_details(processed: list[tuple[str, dict]], model: str) -> list[str]:
+    from summarise import cost_usd
+
+    lines = ["<details><summary>Run details</summary>", "",
+             "| Company | Changes (high / medium / low) | Quotes verified | Merges skipped | Cost |",
+             "|---|---|---|---|---|"]
+    total = 0.0
+    for t, r in processed:
+        rows = r["rows"]
+        if not rows:
+            continue
+        c = counts(r)
+        verified = sum(x["check"]["status"] == "VERIFIED" for x in rows)
+        cost = cost_usd(model, sum(x["input_tokens"] for x in rows),
+                        sum(x["output_tokens"] for x in rows)) or 0.0
+        total += cost
+        lines.append(f"| {t} | {len(rows)} ({c['high']} / {c['medium']} / {c['low']}) "
+                     f"| {verified} of {len(rows)} | {len(r.get('skipped') or [])} | ${cost:.3f} |")
+    lines += ["", f"Model `{model}`. Summaries cost ${total:.2f} in total (the headlines add "
+              f"a little). Every summary quotes the filing and the quotes are checked; a ⚠️ "
+              f"marks a summary whose quote was not found. Headlines and stories are written "
+              f"from the checked summaries. Full detail is in the JSON file next to this digest.",
+              "", "</details>", ""]
+    return lines
 
 
 def write_digest(date: str, results: dict[str, list[dict]], errors: dict[str, str],
@@ -396,19 +564,35 @@ def write_digest(date: str, results: dict[str, list[dict]], errors: dict[str, st
     """Returns the digest path, whether there is news, and an issue title."""
     processed = [(t, r) for t, rs in results.items() for r in rs]
     news = bool(processed or errors)
-    lines = [f"# Filing digest, {date}", ""]
+    lines = [f"# Filing digest, {nice_date(date)}", ""]
 
     if not news:
         lines.append("No new 10-K or 10-Q filings this week.")
-    for ticker, result in processed:
-        lines += filing_section(ticker, result, model)
+    if processed:
+        n_high = sum(counts(r)["high"] for _, r in processed)
+        quiet = sum(not r["rows"] for _, r in processed)
+        summary = (f"{len(processed)} new filing{'s' if len(processed) > 1 else ''} · "
+                   f"{n_high} high-importance change{'s' if n_high != 1 else ''}"
+                   + (f" · {quiet} with nothing new" if quiet else ""))
+        lines += [f"**{summary}**", "",
+                  "| Company | Filing | What changed | 🔴 High | 🟡 Medium | ⚪ Low |",
+                  "|---|---|---|---|---|---|"]
+        lines += [at_a_glance(t, r) for t, r in processed] + [""]
     if errors:
-        lines += ["## Errors", "", "These filings were not recorded as processed and will be "
-                  "retried next week.", ""]
+        lines += ["⚠️ **Errors** (these filings will be retried next week):", ""]
         lines += [f"- **{t}**: {msg}" for t, msg in errors.items()] + [""]
     if baselines:
-        lines += [f"First run for {', '.join(baselines)}: latest filing recorded as the "
-                  f"starting point. Changes are reported from the next filing on.", ""]
+        lines += [f"_First run for {', '.join(baselines)}: latest filings recorded as the "
+                  f"starting point. Changes are reported from the next filing on._", ""]
+    for level, title in LEVELS:
+        section = importance_section(level, title, processed)
+        if section:
+            lines += ["---", ""] + section
+    notes = nothing_new_section(processed)
+    if notes:
+        lines += ["---", ""] + notes
+    if any(r["rows"] for _, r in processed):
+        lines += ["---", ""] + run_details(processed, model)
 
     DIGEST_DIR.mkdir(parents=True, exist_ok=True)
     # A second run on the same day (a manual re-run) gets its own file
@@ -471,6 +655,8 @@ def run(client, model: str, tickers: list[str], force_latest: bool = False,
                 errors[ticker] = (f"{filing['form']} filed {filing['filing_date']}: "
                                   f"{type(e).__name__}: {e}")
                 break  # keep later filings for next week, in order
+            if result["rows"]:
+                add_story(client, model, ticker, result)
             results.setdefault(ticker, []).append(result)
             if filing["accession"] not in done:
                 done.append(filing["accession"])
