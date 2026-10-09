@@ -353,7 +353,8 @@ def test_layout(tmp):
         def create(self, **kwargs):
             if "headline" in json.dumps(kwargs.get("output_config", {})):
                 self.calls += 1
-                story = {"headline": "New online-safety rules"}
+                story = {"headline": "New online-safety rules",
+                         "summary": "A new risk on age verification laws was added."}
                 return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(story))],
                                        usage=SimpleNamespace(input_tokens=300, output_tokens=40),
                                        stop_reason="end_turn")
@@ -370,7 +371,12 @@ def test_layout(tmp):
     return show({
         "an at-a-glance table opens the digest": "| Company | Filing | What changed | 🔴 High | 🟡 Medium | ⚪ Low |" in text,
         "the headline appears in the table": "| New online-safety rules |" in text,
-        "no story paragraphs (they were not checkable)": "\n> " not in text,
+        "the company summary is shown, labelled as unchecked":
+            "> A new risk on age verification laws was added." in text
+            and "not checked against the filing" in text,
+        "a summary adding a number not in the summaries is rejected":
+            digest.summary_problem("A $25 billion programme was added.", "share sale programme")
+            is not None,
         "both filings are linked": "[10-Q of 10 Aug 2026](https://sec.gov/q2)" in text
             and "[10-Q of 7 May 2026](https://sec.gov/q1)" in text,
         "a headline adding a number not in the summaries is dropped":

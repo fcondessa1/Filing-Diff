@@ -345,24 +345,32 @@ def first_sentence(text: str, limit: int = 140) -> str:
 # A headline per company
 # --------------------------------------------------------------------------- #
 
-HEADLINE_PROMPT = """You write the headline for one company's row in a weekly digest of changes to companies' Risk Factors, read by an individual investor.
+SUMMARY_PROMPT = """You write the top of one company's section in a weekly digest of changes to companies' Risk Factors, read by an individual investor.
 
 You get the changes found in the company's latest filing, each already summarised and checked against the filing. Use only these summaries.
 
-Write one headline of at most 12 words naming the main theme, or, if there is none, the most important change.
-- Sentence case: capitalise only the first word and proper names. Good: "SkyWater acquisition brings foundry and integration risks". Bad: "SkyWater Acquisition Brings Foundry And Integration Risks".
-- Do not name the company or its ticker; the table already shows it.
-- Use only facts and figures that appear in the summaries. Do not reinterpret them (for example, a share sale is not a buyback).
-- Say "removed" only for changes listed as REMOVED or PARTLY REMOVED. Keep "could" and "may": these are risks, not events."""
+- headline: at most 12 words naming the main theme, or, if there is none, the most important change. Sentence case: capitalise only the first word and proper names. Good: "SkyWater acquisition brings foundry and integration risks". Bad: "SkyWater Acquisition Brings Foundry And Integration Risks". Do not name the company or its ticker; the table already shows it.
+- summary: one or two sentences on what changed and why it might matter.
 
-HEADLINE_SCHEMA = {
+For both:
+- Use only facts and figures that appear in the summaries, and keep their meaning. Do not reinterpret a change into a related but different one: a share sale (an at-the-market programme) is not a buyback; a guarantee is not a loan; a risk that could happen has not happened.
+- Say "removed" only for changes listed as REMOVED or PARTLY REMOVED.
+- Keep "could" and "may": these are risks, not events."""
+
+SUMMARY_SCHEMA = {
     "type": "object",
-    "properties": {"headline": {"type": "string"}},
-    "required": ["headline"],
+    "properties": {"headline": {"type": "string"}, "summary": {"type": "string"}},
+    "required": ["headline", "summary"],
     "additionalProperties": False,
 }
 
 _NUMBER = re.compile(r"\d[\d,.]*")
+
+
+def added_numbers(text: str, summaries: str) -> list[str]:
+    """Numbers in text that do not appear in the summaries it was written from."""
+    found = (n.rstrip(".,") for n in _NUMBER.findall(text))
+    return [n for n in found if n and n not in summaries]
 
 
 def headline_problem(headline: str, ticker: str, summaries: str) -> str | None:
@@ -372,10 +380,8 @@ def headline_problem(headline: str, ticker: str, summaries: str) -> str | None:
     is that it adds no figures of its own and follows the style rules.
     A failed check replaces the headline with plain counts.
     """
-    for n in _NUMBER.findall(headline):
-        n = n.rstrip(".,")
-        if n and n not in summaries:
-            return f"number {n} is not in the summaries"
+    if added_numbers(headline, summaries):
+        return f"number {added_numbers(headline, summaries)[0]} is not in the summaries"
     if re.search(rf"\b{re.escape(ticker)}\b", headline, re.IGNORECASE):
         return "names the ticker"
     if len(headline.split()) > 16:
@@ -383,18 +389,31 @@ def headline_problem(headline: str, ticker: str, summaries: str) -> str | None:
     return None
 
 
-def add_headline(client, model: str, ticker: str, result: dict) -> None:
-    """
-    A short headline for the company's row in the summary table, written
-    from the checked summaries.
+def summary_problem(summary: str, summaries: str) -> str | None:
+    if added_numbers(summary, summaries):
+        return f"number {added_numbers(summary, summaries)[0]} is not in the summaries"
+    if len(summary.split()) > 90:
+        return "too long"
+    return None
 
-    Earlier versions also wrote a one- or two-sentence story under each
-    company. On the 9 October 2026 run the Alphabet story called a $40
-    billion at-the-market share sale a "share buyback", the opposite, while
-    the checked summaries beneath it had it right. Nothing checks text the
-    model writes from summaries, so the stories were dropped; the headline
-    stays because it is short, and code checks it adds no numbers of its own.
-    Cached like the summaries. On any failure the table shows counts instead.
+
+def add_summary(client, model: str, ticker: str, result: dict) -> None:
+    """
+    A headline for the company's row in the table and a one- or two-sentence
+    summary at the top of its section, written from the checked change
+    summaries rather than from the filing.
+
+    They have no quotes of their own, so they cannot be checked the way the
+    change summaries are, and they can be wrong while everything beneath
+    them is right: on the 9 October 2026 run, Alphabet's summary called a
+    $40 billion at-the-market share sale a "share buyback", the opposite.
+    Three defences, none complete: the prompt names that kind of mistake;
+    code rejects a headline or summary that contains a number not found in
+    the change summaries (which catches invented figures, not a misread
+    meaning like "buyback"); and the digest labels the summary as written
+    from the changes and not checked against the filing. A rejected headline
+    is replaced by a count and a rejected summary is left out. Cached like
+    the change summaries.
     """
     import hashlib
     from summarise import CACHE_DIR, ORDER, response_json, row_label
@@ -406,27 +425,36 @@ def add_headline(client, model: str, ticker: str, result: dict) -> None:
     listing = "\n".join(f"- [{r['materiality'].upper()}] {row_label(r)}: {r['summary']}"
                          for r in rows[:25])
     message = f"FILING: {result['filing']['form']}\n\nCHANGES:\n{listing}"
-    key = hashlib.sha256(json.dumps(["headline-v2", model, message]).encode()).hexdigest()[:24]
-    path = CACHE_DIR / f"headline_{key}.json"
+    key = hashlib.sha256(json.dumps(["summary-v3", model, message]).encode()).hexdigest()[:24]
+    path = CACHE_DIR / f"company_summary_{key}.json"
     try:
         if path.exists():
             parsed = json.loads(path.read_text())
         else:
             response = client.messages.create(
-                model=model, max_tokens=200, system=HEADLINE_PROMPT,
+                model=model, max_tokens=400, system=SUMMARY_PROMPT,
                 messages=[{"role": "user", "content": message}],
-                output_config={"format": {"type": "json_schema", "schema": HEADLINE_SCHEMA}})
+                output_config={"format": {"type": "json_schema", "schema": SUMMARY_SCHEMA}})
             parsed = response_json(response)
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(parsed))
-        headline = (parsed.get("headline") or "").strip().rstrip(".")
-        problem = headline_problem(headline, ticker, listing) if headline else "empty"
-        if problem:
-            print(f"{ticker}: headline dropped ({problem}): {headline!r}")
-        else:
-            result["headline"] = headline
-    except Exception as e:  # the headline is a convenience; never fail the digest over it
-        print(f"{ticker}: no headline ({type(e).__name__}: {e})")
+    except Exception as e:  # a convenience; never fail the digest over it
+        print(f"{ticker}: no headline or summary ({type(e).__name__}: {e})")
+        return
+
+    headline = (parsed.get("headline") or "").strip().rstrip(".")
+    problem = headline_problem(headline, ticker, listing) if headline else "empty"
+    if problem:
+        print(f"{ticker}: headline dropped ({problem}): {headline!r}")
+    else:
+        result["headline"] = headline
+
+    summary = (parsed.get("summary") or "").strip()
+    problem = summary_problem(summary, listing) if summary else "empty"
+    if problem:
+        print(f"{ticker}: summary dropped ({problem}): {summary!r}")
+    else:
+        result["company_summary"] = summary
 
 
 # --------------------------------------------------------------------------- #
@@ -532,6 +560,10 @@ def importance_section(level: str, title: str, processed: list[tuple[str, dict]]
         top = next(lvl for lvl, _ in LEVELS if any(x["materiality"] == lvl for x in r["rows"]))
         if level == top:
             lines += [company_heading(t, r), ""]
+            if r.get("company_summary"):
+                lines += [f"> {r['company_summary']}",
+                          "> <sub>Summary written from the changes below; not checked "
+                          "against the filing.</sub>", ""]
             if r["note"]:
                 lines += [r["note"], ""]
             lines += [change_line(x) for x in rows] + [""]
@@ -586,8 +618,9 @@ def run_details(processed: list[tuple[str, dict]], model: str) -> list[str]:
                      f"| {verified} of {len(rows)} | {len(r.get('skipped') or [])} | ${cost:.3f} |")
     lines += ["", f"Model `{model}`. Summaries cost ${total:.2f} in total (the headlines add "
               f"a little). Every summary quotes the filing and the quotes are checked; a ⚠️ "
-              f"marks a summary whose quote was not found. Table headlines are written "
-              f"from the checked summaries and are not themselves checked against the filing. Full detail is in the JSON file next to this digest.",
+              f"marks a summary whose quote was not found. Headlines and company summaries "
+              f"are written from the checked change summaries and are not themselves "
+              f"checked against the filing. Full detail is in the JSON file next to this digest.",
               "", "</details>", ""]
     return lines
 
@@ -689,7 +722,7 @@ def run(client, model: str, tickers: list[str], force_latest: bool = False,
                                   f"{type(e).__name__}: {e}")
                 break  # keep later filings for next week, in order
             if result["rows"]:
-                add_headline(client, model, ticker, result)
+                add_summary(client, model, ticker, result)
             results.setdefault(ticker, []).append(result)
             if filing["accession"] not in done:
                 done.append(filing["accession"])

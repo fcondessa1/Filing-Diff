@@ -473,16 +473,22 @@ filings with nothing new and risks not repeated (folded), and the cost and
 verification counts (folded). A ⚠️ next to a change marks a summary whose
 quote was not found in the filing.
 
-The first version of this layout also had a one- or two-sentence story per
-company, written by the model from the checked summaries. On its first live
-run, Alphabet's story described a "$40 billion share buyback program". The
-filing describes the opposite: an at-the-market programme to sell up to $40
-billion of new shares, which is why the risk is dilution. The summaries
-underneath had it right. Text the model writes from summaries has nothing to
-quote, so nothing checks it, and it was sitting in the most prominent place
-in the digest. The stories were dropped. The table keeps a short headline per
-company, and code rejects any headline that contains a number not in the
-summaries or names the ticker; a rejected headline is replaced by a count.
+Each company's section opens with a one- or two-sentence summary, and the
+table with a headline, both written by the model from the checked change
+summaries. They have nothing of their own to quote, so they cannot be checked
+the way the change summaries are, and they can be wrong while everything
+beneath them is right. On the first live run, Alphabet's summary described a
+"$40 billion share buyback program". The filing describes the opposite: an
+at-the-market programme to sell up to $40 billion of new shares, which is why
+the risk is dilution. The change summaries underneath had it right.
+
+I briefly removed the summaries, then put them back with three defences,
+none complete: the prompt names that kind of mistake (a share sale is not a
+buyback); code rejects a headline or summary containing a number that is not
+in the change summaries, which catches invented figures but not a misread
+meaning like "buyback"; and each summary is labelled in the digest as written
+from the changes and not checked against the filing. A rejected headline is
+replaced by a count and a rejected summary is left out.
 
 Design decisions:
 
