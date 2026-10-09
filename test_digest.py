@@ -194,12 +194,17 @@ def test_force_latest(tmp):
     _, news, title = digest.run(client, "claude-haiku-4-5-20251001", ["AAPL"],
                                 force_latest=True, today="2026-05-04")
     state = json.loads(digest.STATE_PATH.read_text())
-    _, news_next, _ = digest.run(FakeClient(), "claude-haiku-4-5-20251001", ["AAPL"], today="2026-05-11")
+    first_text = (digest.DIGEST_DIR / "2026-05-04.md").read_text()
+    path_next, news_next, _ = digest.run(FakeClient(), "claude-haiku-4-5-20251001", ["AAPL"],
+                                         today="2026-05-04")
 
     return show({
         "first run with force_latest summarises the latest filing": news and "AAPL 10-Q" in title,
         "and still records all listed filings": set(state["AAPL"]) == {"q1", "q2"},
         "so the next normal run has nothing new": not news_next,
+        "a second run on the same day does not overwrite the first":
+            path_next.name == "2026-05-04-2.md"
+            and (digest.DIGEST_DIR / "2026-05-04.md").read_text() == first_text,
     }, "force latest")
 
 
@@ -242,6 +247,60 @@ def test_updates_after_no_changes(tmp):
     }, "updates after a 'no changes' quarter")
 
 
+def test_join_fragments(tmp):
+    headline = ("The SkyWater business operates in the highly cyclical semiconductor industry, which is "
+                "subject to significant downturns that may negatively impact our results of operations.")
+    body = ("The semiconductor industry is highly cyclical and is characterized by rapid technological "
+            "change, price erosion and wide fluctuations in supply and demand. Downturns may last long.")
+    headline2 = "Our sales cycles are long and unpredictable, which could adversely affect our results."
+    body2 = "Sales typically require lengthy cycles. Customers can be complex and require education."
+    text = "\n\n".join(["Risks Related to the SkyWater Acquisition", headline, body, headline2, body2])
+    joined = digest.join_fragments(text).split("\n\n")
+
+    broken = ("Violations of export controls could result in significant penalties, and the penalties available"
+              "\n\n42\n\nTable of Contents\n\n"
+              "under these rules could have a material and adverse impact on our business.")
+    mended = digest.join_fragments(broken).split("\n\n")
+
+    two_headlines = "\n\n".join([headline, headline2, body2])
+    kept = digest.join_fragments(two_headlines).split("\n\n")
+
+    list_intro = "Our results could be affected by the following factors, as well as:\n\nchanges in interest rates;"
+
+    # Cases from the first check on real filings (check_joining.py).
+    intro = ("Other than the risk factors listed below, there have been no material changes from the "
+             "risk factors previously described in our Annual Report on Form 10-K.")
+    msft_head = ("We face intense competition across all markets for our products and services, which "
+                 "could adversely affect our results of operations.")
+    sub = "Competition in the technology sector"
+    msft_body = ("Our competitors range in size from diversified global companies to small, specialized "
+                 "firms. Barriers to entry in many of our businesses are low.")
+    real = digest.join_fragments("\n\n".join([intro, msft_head, sub, msft_body])).split("\n\n")
+    bullet = "\u2022\ngeopolitical events, including war and terrorism."
+    after_bullet = ("As international retail and cloud services grow, competition will intensify. "
+                    "Local companies may have a substantial competitive advantage.")
+    amzn = ("Governments may ultimately enforce these rules in a way that courts\n\nTable of "
+            "\nContents ultimately take a view contrary to ours.")
+    return show({
+        "the section's 'no material changes' opening is not a headline": real[0] == intro,
+        "a headline is not joined to a subheading": msft_head in real and sub in real,
+        "a bullet point is not a headline":
+            len(digest.join_fragments(f"{bullet}\n\n{after_bullet}").split("\n\n")) == 2,
+        "a 'Table of Contents' link glued to the text is removed and the sentence rejoined":
+            digest.join_fragments(amzn) == ("Governments may ultimately enforce these rules in a way "
+                                            "that courts ultimately take a view contrary to ours."),
+        "each headline is joined to its body": joined == [
+            "Risks Related to the SkyWater Acquisition", f"{headline} {body}", f"{headline2} {body2}"],
+        "a sentence split by a page break is rejoined, page furniture dropped":
+            mended == ["Violations of export controls could result in significant penalties, and the "
+                       "penalties available under these rules could have a material and adverse impact "
+                       "on our business."],
+        "a headline followed by another headline is not joined to it":
+            kept == [headline, f"{headline2} {body2}"],
+        "a list introduced by a colon is left alone": len(digest.join_fragments(list_intro).split("\n\n")) == 2,
+    }, "joining headlines and page-break fragments")
+
+
 if __name__ == "__main__":
     tmp = Path(tempfile.mkdtemp())
     saved = (edgar.get_cik, edgar.list_filings, digest.risk_factors,
@@ -250,7 +309,8 @@ if __name__ == "__main__":
     try:
         results = [test_watchlist(tmp), test_first_run_and_quiet_week(tmp), test_new_10q(tmp),
                    test_missing_section_and_errors(tmp), test_force_latest(tmp),
-                   test_10k_extraction_failure(tmp), test_updates_after_no_changes(tmp)]
+                   test_10k_extraction_failure(tmp), test_updates_after_no_changes(tmp),
+                   test_join_fragments(tmp)]
     finally:
         (edgar.get_cik, edgar.list_filings, digest.risk_factors,
          digest.DIGEST_DIR, digest.STATE_PATH, summarise.CACHE_DIR) = saved

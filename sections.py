@@ -21,7 +21,10 @@ from bs4 import BeautifulSoup
 # Where each section ends. 10-Q uses a different numbering scheme than 10-K,
 # so we key on the start item and list plausible terminators.
 BOUNDARIES = {
-    "1A": ["item 1b", "item 2"],
+    # A 10-Q's Part II may skip items: LEU's goes from Item 1A straight to
+    # Item 5, so ending only at 1B or 2 ran Risk Factors into Item 6.
+    # The nearest heading after the start wins, so adding later items is safe.
+    "1A": ["item 1b", "item 1c", "item 2", "item 3", "item 4", "item 5", "item 6"],
     "7": ["item 7a", "item 8"],
     "7A": ["item 8"],
     "2": ["item 3"],  # 10-Q MD&A lives in Part I Item 2

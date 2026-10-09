@@ -57,7 +57,14 @@ statement = ("<html><body><p>Item 1A. Risk Factors</p><p>There have been no mate
              "December 31, 2025.</p><p>Item 2. Unregistered Sales</p><p>None.</p></body></html>")
 s = html_to_text(statement)
 
+skips = ("<html><body><p>Item 1A. Risk Factors</p><p>" + "Risks of our business. " * 60 + "</p>"
+         "<p>Item 5. Other Information</p><p>None of our directors adopted a trading plan.</p>"
+         "<p>Item 6. Exhibits</p></body></html>")
+skipped = extract_item(html_to_text(skips), "1A")
+
 checks = {
+    "a 10-Q that skips from Item 1A to Item 5 ends at Item 5":
+        skipped is not None and "trading plan" not in skipped,
     "heading inside a one-row table is found": risk is not None and risk.startswith("Item 1A."),
     "section ends at the Item 2 heading table": risk is not None and "Unregistered" not in risk,
     "table of contents still dropped": "Legal Proceedings" not in t,

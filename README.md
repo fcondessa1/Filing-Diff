@@ -507,10 +507,44 @@ added...". The quotes behind both were verified, so the citation check passed.
 It is the same lesson as the removal summaries: a check on quotes cannot catch
 a wrong statement built around them. The ticker is now part of the prompt.
 
-Still open from that run: some paragraphs are split mid-sentence at page
-breaks (an NVDA risk "ending mid-sentence at 'penalties available'"), and two
-MSFT rows describe the same wording as added in one and removed in the other,
-the mis-paired paragraph problem seen with Apple.
+The second run (all eight extracting) showed a different kind of noise: the
+same risk summarised two or three times. Filers write each risk factor as a
+one-sentence bold headline followed by its explanation, and the diff treated
+them as separate paragraphs, so IonQ's new risk on semiconductor cyclicality
+got one summary for its headline and another for its body, and Alphabet's $40
+billion share-sale programme appeared three times. The digest now joins each
+headline to the paragraph after it before diffing (`join_fragments` in
+`digest.py`), and rejoins sentences split by page breaks, which removes the
+NVDA "penalties available" fragment.
+
+The first version of the rule was checked against the real filings
+(`check_joining.py`, no API calls) before any summaries were paid for, and
+paired five kinds of text wrongly: the section's opening "no material changes"
+sentence, subheadings (Microsoft's "Competition in the technology sector"),
+Amazon's bullet points, "Table of Contents" page links stuck to the text, and
+text from Items 5 and 6. The last was an extraction bug the check exposed:
+LEU's 10-Q goes from Item 1A straight to Item 5, and Risk Factors only ended at
+Item 1B or 2, so it had been running on into the rest of the filing. After the
+fixes:
+
+| Company | Changes before joining | After |
+|---|---|---|
+| IONQ | 32 | 17 |
+| NVDA | 40 | 32 |
+| GOOGL | 18 | 16 |
+| LEU | 9 | 7 |
+| QBTS | 5 | 4 |
+| AMZN | 1 | 1 |
+| MSFT | 61 | 60 |
+| **Total** | **166** | **137 (17% fewer)** |
+
+The rule works from text alone, so it cannot see bold formatting. It still
+joins a short closing sentence of one Microsoft risk ("The competitive
+pressures described above may cause...") to the start of the next. Both
+filings are joined the same way, so this rarely creates a false change, but
+reading bold headings from the HTML would be the proper fix. Also still open:
+two MSFT rows describe the same wording as added in one and removed in the
+other, the mis-paired paragraph problem seen with Apple.
 
 Setup: add two repository secrets under Settings → Secrets and variables →
 Actions: `ANTHROPIC_API_KEY` and `EDGAR_USER_AGENT` ("Your Name

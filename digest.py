@@ -141,6 +141,93 @@ def quote_statement(text: str) -> str:
     return f"> {body[:400]}{'…' if len(body) > 400 else ''}"
 
 
+# --------------------------------------------------------------------------- #
+# Joining headlines and page-break fragments before the diff
+# --------------------------------------------------------------------------- #
+
+HEADLINE_MAX = 400     # characters; risk factor headlines seen were 170 to 350
+_PAGE_FURNITURE = re.compile(r"^(\d{1,3}|table\s+of\s+contents|page \d+)$", re.IGNORECASE)
+# "Table of Contents" page links glued to the text around them (Amazon).
+_TOC_LINK = re.compile(r"^table\s+of\s+contents\s+|\s+table\s+of\s+contents$", re.IGNORECASE)
+_ENDS_SENTENCE = re.compile(r"[.!?:;][\"”’)]*$")
+_INNER_SENTENCE_BREAK = re.compile(r"[.!?][\"”’)]*\s+[A-Z]")
+
+
+def is_headline(paragraph: str) -> bool:
+    """
+    One short sentence starting with a capital: how filers write each risk
+    factor's bold title. Not a bullet point (Amazon's lists end in a full
+    stop), not an Item heading, and not the section's opening statement
+    ("Other than the risk factors listed below, there have been no material
+    changes..."), which introduces the whole section, not the next paragraph.
+    """
+    p = paragraph.strip()
+    return (len(p) <= HEADLINE_MAX and p[:1].isupper() and p.endswith((".", "?", "!"))
+            and _INNER_SENTENCE_BREAK.search(p) is None
+            and not re.match(r"item\s*\d", p, re.IGNORECASE)
+            and "no material change" not in p.lower())
+
+
+def is_body(paragraph: str) -> bool:
+    """
+    Text a headline can be joined to: ends a sentence and is not itself a
+    headline. Rules out subheadings such as Microsoft's "Competition in the
+    technology sector" or Alphabet's "Risks Specific to our Company", which
+    sit between a headline and its body or between groups of risks.
+    """
+    return _ENDS_SENTENCE.search(paragraph.strip()) is not None and not is_headline(paragraph)
+
+
+def join_fragments(text: str) -> str:
+    """
+    Rejoin text that the HTML split into separate paragraphs, so the diff
+    compares one unit per risk factor.
+
+    Two cases, both seen on the first eight-company digest:
+
+    1. Headline and body. Each risk factor is a one-sentence bold title
+       followed by its explanation. Diffed separately, a new risk produced
+       two near-identical summaries (IonQ: "cyclical", "sales cycles",
+       "cancellable purchase orders" each twice; Alphabet's $40 billion
+       share sale three times). A headline is joined to the paragraph after
+       it when that is body text (see is_headline and is_body for what the
+       first check on real filings showed these need to exclude).
+    2. Page breaks. A sentence running across a page break became two
+       paragraphs, and the second half was summarised as a change ("ending
+       mid-sentence at 'penalties available'"). A paragraph that does not end
+       a sentence is joined to the next one when that starts in lower case.
+       Page numbers and "Table of Contents" links between them are dropped,
+       including links glued to the text (Amazon: "Table of Contents
+       ultimately take a view contrary to ours.").
+
+    Used by the digest only; the Apple results in the README were produced
+    without it.
+    """
+    paras = [_TOC_LINK.sub("", p.strip()).strip() for p in re.split(r"\n\s*\n", text)]
+    paras = [p for p in paras if p and not _PAGE_FURNITURE.match(p)]
+
+    # Page-break continuations first, so a headline split across pages is whole.
+    joined: list[str] = []
+    for p in paras:
+        if joined and not _ENDS_SENTENCE.search(joined[-1]) and p[:1].islower():
+            joined[-1] = f"{joined[-1]} {p}"
+        else:
+            joined.append(p)
+
+    out: list[str] = []
+    i = 0
+    while i < len(joined):
+        p = joined[i]
+        nxt = joined[i + 1] if i + 1 < len(joined) else None
+        if nxt and is_headline(p) and is_body(nxt):
+            out.append(f"{p} {nxt}")
+            i += 2
+        else:
+            out.append(p)
+            i += 1
+    return "\n\n".join(out)
+
+
 def process_filing(client, model: str, filing: dict, previous: dict | None,
                    company: str | None = None) -> dict:
     """
@@ -185,7 +272,7 @@ def process_filing(client, model: str, filing: dict, previous: dict | None,
                 f"its risk factors, so every risk factor in this filing's section is new since "
                 f"then and is listed as added.")
 
-    changes, skipped = collect_changes(old_text, new_text)
+    changes, skipped = collect_changes(join_fragments(old_text), join_fragments(new_text))
     if company:
         changes = [{**c, "company": company} for c in changes]
     rows = [summarise_change(client, model, c) for c in changes]
@@ -254,9 +341,15 @@ def write_digest(date: str, results: dict[str, list[dict]], errors: dict[str, st
                   f"starting point. Changes are reported from the next filing on.", ""]
 
     DIGEST_DIR.mkdir(parents=True, exist_ok=True)
-    path = DIGEST_DIR / f"{date}.md"
+    # A second run on the same day (a manual re-run) gets its own file
+    # instead of replacing the first: 2026-10-08.md, then 2026-10-08-2.md.
+    stem, n = date, 1
+    while (DIGEST_DIR / f"{stem}.md").exists():
+        n += 1
+        stem = f"{date}-{n}"
+    path = DIGEST_DIR / f"{stem}.md"
     path.write_text("\n".join(lines))
-    (DIGEST_DIR / f"{date}.json").write_text(json.dumps(
+    (DIGEST_DIR / f"{stem}.json").write_text(json.dumps(
         {t: rs for t, rs in results.items()}, ensure_ascii=False, indent=1, default=str))
 
     parts = [f"{t} {r['filing']['form']}" + (" (extraction failed)" if r.get("extraction_failed") else "")
