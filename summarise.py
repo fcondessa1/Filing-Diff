@@ -442,7 +442,9 @@ def hand_label(raw: str) -> str | None:
         return "partially_removed"
     if "REAL" in v:
         return "removed"
-    if any(w in v for w in ("MERGED", "REWORDED", "SCATTERED", "SPLIT", "MOVED")):
+    # "NOT REPEATED": a 10-Q that lists only updates left it out, but the
+    # risk still stands in the 10-K, so it was not dropped.
+    if any(w in v for w in ("MERGED", "REWORDED", "SCATTERED", "SPLIT", "MOVED", "REPEATED")):
         return "moved_or_reworded"
     return None
 

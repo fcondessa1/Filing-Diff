@@ -465,8 +465,8 @@ quarter per company, so most weeks report nothing new and make no API calls.
 
 Design decisions:
 
-- **10-Q is compared with 10-Q, not with the last 10-K.** A 10-Q's Risk
-  Factors section lists only updates to the annual report, not the full set.
+- **10-Q is compared with 10-Q, not with the last 10-K.** Many 10-Qs' Risk
+  Factors sections list only updates to the annual report, not the full set.
   Diffing it against a 10-K would report every risk factor it does not repeat
   as removed. 10-Qs write this section in three ways (see below); a "no
   material changes" statement is quoted, not diffed.
@@ -545,6 +545,58 @@ filings are joined the same way, so this rarely creates a false change, but
 reading bold headings from the HTML would be the proper fix. Also still open:
 two MSFT rows describe the same wording as added in one and removed in the
 other, the mis-paired paragraph problem seen with Apple.
+
+### Hand-checking a second company: NVIDIA
+
+Apple's hand verification showed most "removals" were text merged into other
+paragraphs. The same check on NVIDIA (`verify_digest.py`, review file in
+`results/nvda_verification.txt`) found a different cause, and a bigger one.
+
+The 9 October digest reported 15 risks removed from NVIDIA's August 2026 10-Q,
+9 of them high materiality: demand forecasting, inventory, supply lead times,
+competition, crypto mining. The review file shows each removed paragraph next
+to the closest paragraphs in the August 10-Q (what the model saw) and in the
+latest 10-K. The answer was in the August section's opening sentence:
+
+> Other than the risk factors listed below, there have been no material
+> changes from the risk factors previously described under Item 1A of our
+> Annual Report on Form 10-K ... and Item 1A of our Quarterly Report on Form
+> 10-Q for the fiscal quarter ended April 26, 2026.
+
+August lists only what changed since May, and says the rest still stands.
+The 15 were risks updated in May and not updated again:
+
+| Verdict | Count | Evidence |
+|---|---|---|
+| Not repeated (still stands) | 14 | 10 identical to the 10-K (containment 1.00); 4 were May's updated versions, still standing by the sentence above |
+| Partly removed | 1 | the H20 export-licence paragraph was rewritten in August and no longer states the government's expected 15% revenue share |
+| Removed | 0 | |
+
+| | Exact verdict | Removed or not |
+|---|---|---|
+| Diff alone (calls all 15 removed) | 0/15 | 0/15 |
+| Model (saw only the August 10-Q) | 3/15 | 4/15 |
+
+The model called 11 of 15 removed. It was never shown the opening sentence or
+the earlier filings, so it could not know; this is a design error in the
+pipeline, not a model error. The verdicts in this table were written by
+Claude, with the evidence for each in the review file, not by me
+independently as Apple's were; the deciding evidence is mechanical (identical
+text, plus the incorporation sentence).
+
+The fix (`is_updates_only` and `not_repeated` in `digest.py`): when the new
+10-Q lists only updates, a paragraph it leaves out is reported as "not
+repeated", with its first sentence, and no model call is made. If the filing
+does not say whether the previous 10-Q's updates still stand (naming only the
+10-K), the digest says that instead of claiming either way. A left-out
+paragraph whose closest new paragraph contains at least 40% of it is treated
+as rewritten and still judged by the model: that separates the H20 paragraph
+(0.46) from the rest (at most 0.33) on this filing, and is a threshold from
+one filing, to be checked as more are verified. On the 9 October digest this
+turns NVIDIA's 15 removals into 1 judged change and 14 not-repeated lines,
+and LEU's 3 "removed" AI risks into not-repeated lines. Microsoft's removal is
+untouched: a 10-K lists every risk, so a missing paragraph there can be a real
+removal.
 
 Setup: add two repository secrets under Settings → Secrets and variables →
 Actions: `ANTHROPIC_API_KEY` and `EDGAR_USER_AGENT` ("Your Name

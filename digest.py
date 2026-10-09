@@ -228,19 +228,63 @@ def join_fragments(text: str) -> str:
     return "\n\n".join(out)
 
 
+SUCCESSOR_FLOOR = 0.40   # containment; see not_repeated()
+
+
+def is_updates_only(text: str) -> bool:
+    """
+    A section that lists only what changed and says the rest still stands:
+    "Other than the risk factors listed below, there have been no material
+    changes from the risk factors previously described..." (NVDA, IONQ),
+    "Except as set forth below..." (LEU, QBTS), "Below are material changes to
+    our risk factors since our Annual Report..." (GOOGL). Read from the
+    section's opening, where every filer seen so far puts it.
+    """
+    opening = text[:800].lower()
+    return "below" in opening and re.search(r"material changes?", opening) is not None
+
+
+# NVIDIA's August opening names both the 10-K and the May 10-Q as still
+# standing. A filer naming only the 10-K leaves the earlier 10-Q's updates
+# unaddressed, and the digest says so rather than guessing.
+
+
+def not_repeated(change: dict) -> bool:
+    """
+    A paragraph missing from an updates-only section with no successor in it.
+
+    Hand verification of NVIDIA's August 2026 10-Q: all 15 "removals" were
+    risks updated in May and not updated again in August. The August section
+    opens by saying everything else in the 10-K and the May 10-Q still stands,
+    so none was dropped. One had been rewritten: the new H20 export-licence
+    paragraph keeps its opening sentence and drops the expected 15% revenue
+    share. It is the only one whose closest new paragraph holds a large share
+    of it (containment 0.46; the next highest of the 15 was 0.33). A removal
+    with a successor at or above SUCCESSOR_FLOOR is still judged by the model;
+    the rest are reported as not repeated. The floor is set from that one
+    filing and should be checked as more are verified.
+    """
+    best = max((c["containment"] for c in change.get("candidates") or []), default=0.0)
+    return change["kind"] == "removed" and best < SUCCESSOR_FLOOR
+
+
 def process_filing(client, model: str, filing: dict, previous: dict | None,
                    company: str | None = None) -> dict:
     """
     Compare one new filing with its predecessor and summarise the changes.
 
-    10-Q Item 1A sections come in three shapes, seen on the first live run:
-      - full risk factors every quarter (NVDA, GOOGL, LEU, AMZN)
-      - one sentence: no material changes since the 10-K (IONQ and QBTS in Q1)
+    10-Q Item 1A sections come in three shapes, seen on the first live runs:
+      - full risk factors every quarter (AMZN)
+      - one sentence: no material changes since the 10-K (OKTA; IONQ and QBTS
+        in Q1)
       - only the updates: "Other than as set forth below, there have been no
-        material changes" followed by the new risks (IONQ and QBTS in Q2)
+        material changes", then the updated risks (NVDA, GOOGL, LEU; IONQ and
+        QBTS in Q2)
     A statement is reported as such, not diffed. When the previous 10-Q was a
     statement, everything in an updates section is new since last quarter, so
     it is compared against nothing and every paragraph is reported as added.
+    When the new section lists only updates, a paragraph it leaves out was not
+    updated again, not dropped: see not_repeated().
     """
     from summarise import collect_changes, summarise_change
 
@@ -273,16 +317,30 @@ def process_filing(client, model: str, filing: dict, previous: dict | None,
                 f"then and is listed as added.")
 
     changes, skipped = collect_changes(join_fragments(old_text), join_fragments(new_text))
+    left_out = []
+    if old_text and is_updates_only(new_text):
+        left_out = [c["old"] for c in changes if not_repeated(c)]
+        changes = [c for c in changes if not not_repeated(c)]
     if company:
         changes = [{**c, "company": company} for c in changes]
     rows = [summarise_change(client, model, c) for c in changes]
-    return {**base, "rows": rows, "skipped": skipped,
-            "note": note if rows else "No changes to Risk Factors."}
+    if not rows and not note:
+        note = "No changes to Risk Factors."
+    return {**base, "rows": rows, "skipped": skipped, "not_repeated": left_out, "note": note,
+            "cites_previous_10q": re.search(r"quarterly report|form 10-q",
+                                            new_text[:800], re.IGNORECASE) is not None}
 
 
 # --------------------------------------------------------------------------- #
 # Writing the digest
 # --------------------------------------------------------------------------- #
+
+def first_sentence(text: str, limit: int = 140) -> str:
+    text = re.sub(r"\s+", " ", text).strip()
+    m = _INNER_SENTENCE_BREAK.search(text)
+    head = text[:m.start() + 1] if m else text
+    return head if len(head) <= limit else head[:limit].rsplit(" ", 1)[0] + "…"
+
 
 def filing_section(ticker: str, result: dict, model: str) -> list[str]:
     from summarise import BADGE, ORDER, cost_usd, row_label
@@ -293,6 +351,18 @@ def filing_section(ticker: str, result: dict, model: str) -> list[str]:
              "", f"[Filing on EDGAR]({f['url']})", ""]
     if result["note"]:
         lines += [result["note"], ""]
+    left_out = result.get("not_repeated") or []
+    if left_out:
+        if result.get("cites_previous_10q"):
+            why = ("This filing lists only updates and says the risk factors in the 10-K and "
+                   "earlier 10-Qs still stand, so these were not updated again, not removed:")
+        else:
+            why = ("This filing lists only updates since the 10-K and does not say whether the "
+                   "previous 10-Q's updates still stand. Most likely they were not updated "
+                   "again rather than removed; check the filing if one matters to you:")
+        lines += [f"{len(left_out)} risk factors from the previous {prev['form']} are not "
+                  f"repeated. {why}", ""]
+        lines += [f"- {first_sentence(t)}" for t in left_out] + [""]
     if not result["rows"]:
         return lines
 

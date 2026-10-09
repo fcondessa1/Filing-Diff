@@ -301,6 +301,45 @@ def test_join_fragments(tmp):
     }, "joining headlines and page-break fragments")
 
 
+def test_updates_only(tmp):
+    fresh_dirs(tmp, "updates_only")
+    w = World()
+    q1, q2 = filing("q1", "10-Q", "2026-05-20"), filing("q2", "10-Q", "2026-08-26")
+    opening = ("Other than the risk factors listed below, there have been no material changes from "
+               "the risk factors previously described in our Annual Report on Form 10-K and our "
+               "Quarterly Report on Form 10-Q for the quarter ended April 26, 2026.")
+    supply = ("Long manufacturing lead times and uncertain supply and capacity availability, combined "
+              "with a failure to estimate customer demand accurately, could lead to mismatches "
+              "between supply and demand. We have experienced lead times of more than 12 months.")
+    licence = ("Beginning in August 2025, the government granted licenses that would allow us to ship "
+               "certain products to certain customers. Officials expressed an expectation that the "
+               "government will receive 15% or more of the revenue from licensed sales.")
+    licence_new = ("Beginning in August 2025, the government granted licenses that would have allowed "
+                   "us to ship certain products to certain customers, but such sales were restricted "
+                   "abroad. We were unable to sell our inventory under those licenses.")
+    w.filings["NVDA"] = [q2, q1]
+    w.texts = {q1["url"]: "\n\n".join([opening, supply, licence]),
+               q2["url"]: "\n\n".join([opening, licence_new])}
+    w.install()
+    digest.save_state({"NVDA": ["q1"]})
+    client = FakeClient()
+    path, news, title = digest.run(client, "claude-haiku-4-5-20251001", ["NVDA"], today="2026-08-31")
+    text = path.read_text()
+    result = json.loads((digest.DIGEST_DIR / "2026-08-31.json").read_text())["NVDA"][0]
+    return show({
+        "an updates-only section is recognised": digest.is_updates_only(opening),
+        "a full section is not": not digest.is_updates_only(
+            "Please carefully consider the following discussion of significant factors."),
+        "a left-out paragraph with no successor is listed as not repeated, not removed":
+            len(result["not_repeated"]) == 1 and "Long manufacturing lead times" in text
+            and "not repeated" in text,
+        "and costs no model call": not any("Long manufacturing" in m for m in client.sent),
+        "a rewritten paragraph is still judged by the model":
+            any(r["old"] == licence for r in result["rows"]),
+        "the digest says the earlier 10-Q still stands": "earlier 10-Qs still stand" in text,
+    }, "updates-only 10-Q")
+
+
 if __name__ == "__main__":
     tmp = Path(tempfile.mkdtemp())
     saved = (edgar.get_cik, edgar.list_filings, digest.risk_factors,
@@ -310,7 +349,7 @@ if __name__ == "__main__":
         results = [test_watchlist(tmp), test_first_run_and_quiet_week(tmp), test_new_10q(tmp),
                    test_missing_section_and_errors(tmp), test_force_latest(tmp),
                    test_10k_extraction_failure(tmp), test_updates_after_no_changes(tmp),
-                   test_join_fragments(tmp)]
+                   test_join_fragments(tmp), test_updates_only(tmp)]
     finally:
         (edgar.get_cik, edgar.list_filings, digest.risk_factors,
          digest.DIGEST_DIR, digest.STATE_PATH, summarise.CACHE_DIR) = saved
