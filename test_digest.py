@@ -127,7 +127,7 @@ def test_new_10q(tmp):
 
     return show({
         "new 10-Q is news; issue title names it": news and "AAPL 10-Q" in title,
-        "compared with the previous 10-Q, not the 10-K": "(vs 10-Q of 30 Jan 2026)" in text,
+        "compared with the previous 10-Q, not the 10-K": "compared with [10-Q of 30 Jan 2026](https://sec.gov/q1)" in text,
         "the added risk is summarised": "age verification" in text and client.calls >= 1,
         "high-materiality change listed under High importance": "## 🔴 High importance (1)" in text,
         "the model is told whose filing it is": client.sent and "COMPANY: AAPL" in client.sent[0],
@@ -353,8 +353,7 @@ def test_layout(tmp):
         def create(self, **kwargs):
             if "headline" in json.dumps(kwargs.get("output_config", {})):
                 self.calls += 1
-                story = {"headline": "New online-safety rules",
-                         "story": "The company added a risk about age verification laws."}
+                story = {"headline": "New online-safety rules"}
                 return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(story))],
                                        usage=SimpleNamespace(input_tokens=300, output_tokens=40),
                                        stop_reason="end_turn")
@@ -370,8 +369,17 @@ def test_layout(tmp):
     text2 = path2.read_text()
     return show({
         "an at-a-glance table opens the digest": "| Company | Filing | What changed | 🔴 High | 🟡 Medium | ⚪ Low |" in text,
-        "the headline appears in the table and the story under the company":
-            "New online-safety rules" in text and "> The company added a risk about age" in text,
+        "the headline appears in the table": "| New online-safety rules |" in text,
+        "no story paragraphs (they were not checkable)": "\n> " not in text,
+        "both filings are linked": "[10-Q of 10 Aug 2026](https://sec.gov/q2)" in text
+            and "[10-Q of 7 May 2026](https://sec.gov/q1)" in text,
+        "a headline adding a number not in the summaries is dropped":
+            digest.headline_problem("A $40 billion buyback", "GOOGL", "share sale programme") is not None,
+        "a headline naming the ticker is dropped":
+            digest.headline_problem("NVDA's AI bets create risks", "NVDA", "AI bets") is not None,
+        "a clean headline passes":
+            digest.headline_problem("SkyWater acquisition brings foundry risks", "IONQ",
+                                    "SkyWater acquisition foundry") is None,
         "summaries lose the 'The company added a new risk factor regarding' opening":
             digest.short_summary("The company added a new risk factor regarding long and "
                                  "unpredictable sales cycles for the SkyWater business.")

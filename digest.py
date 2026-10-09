@@ -342,30 +342,59 @@ def first_sentence(text: str, limit: int = 140) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# A one-line story per company
+# A headline per company
 # --------------------------------------------------------------------------- #
 
-STORY_PROMPT = """You write the opening line of a weekly digest of changes to companies' Risk Factors, for an individual investor skimming it.
+HEADLINE_PROMPT = """You write the headline for one company's row in a weekly digest of changes to companies' Risk Factors, read by an individual investor.
 
-You get the changes found in one company's latest filing, each already summarised and checked against the filing. Use only these summaries.
+You get the changes found in the company's latest filing, each already summarised and checked against the filing. Use only these summaries.
 
-- headline: at most 12 words, plain English, no ticker, no "the company". Name the main theme; if there is none, the most important change.
-- story: one or two sentences on what changed and why it might matter. Say "removed" only for changes listed as REMOVED or PARTLY REMOVED. Keep "could" and "may": these are risks, not events."""
+Write one headline of at most 12 words naming the main theme, or, if there is none, the most important change.
+- Sentence case: capitalise only the first word and proper names. Good: "SkyWater acquisition brings foundry and integration risks". Bad: "SkyWater Acquisition Brings Foundry And Integration Risks".
+- Do not name the company or its ticker; the table already shows it.
+- Use only facts and figures that appear in the summaries. Do not reinterpret them (for example, a share sale is not a buyback).
+- Say "removed" only for changes listed as REMOVED or PARTLY REMOVED. Keep "could" and "may": these are risks, not events."""
 
-STORY_SCHEMA = {
+HEADLINE_SCHEMA = {
     "type": "object",
-    "properties": {"headline": {"type": "string"}, "story": {"type": "string"}},
-    "required": ["headline", "story"],
+    "properties": {"headline": {"type": "string"}},
+    "required": ["headline"],
     "additionalProperties": False,
 }
 
+_NUMBER = re.compile(r"\d[\d,.]*")
 
-def add_story(client, model: str, ticker: str, result: dict) -> None:
+
+def headline_problem(headline: str, ticker: str, summaries: str) -> str | None:
     """
-    A headline and a one- or two-sentence story for the top of a company's
-    section, written from the checked summaries (not from the filing, so it
-    has no quotes of its own to verify). Cached like the summaries. On any
-    failure the digest falls back to counts.
+    Checks that can be made in code. A headline is not quoted from the
+    filing, so it cannot be verified like the summaries; what can be checked
+    is that it adds no figures of its own and follows the style rules.
+    A failed check replaces the headline with plain counts.
+    """
+    for n in _NUMBER.findall(headline):
+        n = n.rstrip(".,")
+        if n and n not in summaries:
+            return f"number {n} is not in the summaries"
+    if re.search(rf"\b{re.escape(ticker)}\b", headline, re.IGNORECASE):
+        return "names the ticker"
+    if len(headline.split()) > 16:
+        return "too long"
+    return None
+
+
+def add_headline(client, model: str, ticker: str, result: dict) -> None:
+    """
+    A short headline for the company's row in the summary table, written
+    from the checked summaries.
+
+    Earlier versions also wrote a one- or two-sentence story under each
+    company. On the 9 October 2026 run the Alphabet story called a $40
+    billion at-the-market share sale a "share buyback", the opposite, while
+    the checked summaries beneath it had it right. Nothing checks text the
+    model writes from summaries, so the stories were dropped; the headline
+    stays because it is short, and code checks it adds no numbers of its own.
+    Cached like the summaries. On any failure the table shows counts instead.
     """
     import hashlib
     from summarise import CACHE_DIR, ORDER, response_json, row_label
@@ -376,24 +405,28 @@ def add_story(client, model: str, ticker: str, result: dict) -> None:
         return
     listing = "\n".join(f"- [{r['materiality'].upper()}] {row_label(r)}: {r['summary']}"
                          for r in rows[:25])
-    message = f"COMPANY: {ticker}\nFILING: {result['filing']['form']}\n\nCHANGES:\n{listing}"
-    key = hashlib.sha256(json.dumps(["story-v1", model, message]).encode()).hexdigest()[:24]
-    path = CACHE_DIR / f"story_{key}.json"
+    message = f"FILING: {result['filing']['form']}\n\nCHANGES:\n{listing}"
+    key = hashlib.sha256(json.dumps(["headline-v2", model, message]).encode()).hexdigest()[:24]
+    path = CACHE_DIR / f"headline_{key}.json"
     try:
         if path.exists():
             parsed = json.loads(path.read_text())
         else:
             response = client.messages.create(
-                model=model, max_tokens=400, system=STORY_PROMPT,
+                model=model, max_tokens=200, system=HEADLINE_PROMPT,
                 messages=[{"role": "user", "content": message}],
-                output_config={"format": {"type": "json_schema", "schema": STORY_SCHEMA}})
+                output_config={"format": {"type": "json_schema", "schema": HEADLINE_SCHEMA}})
             parsed = response_json(response)
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(parsed))
-        if parsed.get("headline") and parsed.get("story"):
-            result["headline"], result["story"] = parsed["headline"], parsed["story"]
-    except Exception as e:  # the story is a convenience; never fail the digest over it
-        print(f"{ticker}: no story ({type(e).__name__}: {e})")
+        headline = (parsed.get("headline") or "").strip().rstrip(".")
+        problem = headline_problem(headline, ticker, listing) if headline else "empty"
+        if problem:
+            print(f"{ticker}: headline dropped ({problem}): {headline!r}")
+        else:
+            result["headline"] = headline
+    except Exception as e:  # the headline is a convenience; never fail the digest over it
+        print(f"{ticker}: no headline ({type(e).__name__}: {e})")
 
 
 # --------------------------------------------------------------------------- #
@@ -469,10 +502,12 @@ def at_a_glance(ticker: str, result: dict) -> str:
 
 
 def company_heading(ticker: str, result: dict) -> str:
+    """Links to both filings, so any change can be checked against the
+    original on either side."""
     f, prev = result["filing"], result["previous"]
-    vs = f" (vs {prev['form']} of {nice_date(prev['filing_date'])})" if prev else ""
-    return (f"### {ticker} · {f['form']}, {nice_date(f['filing_date'])}{vs} · "
-            f"[filing]({f['url']})")
+    vs = (f" · compared with [{prev['form']} of {nice_date(prev['filing_date'])}]({prev['url']})"
+          if prev else "")
+    return f"### {ticker} · [{f['form']} of {nice_date(f['filing_date'])}]({f['url']}){vs}"
 
 
 def importance_section(level: str, title: str, processed: list[tuple[str, dict]]) -> list[str]:
@@ -491,14 +526,12 @@ def importance_section(level: str, title: str, processed: list[tuple[str, dict]]
                   + ". Minor wording changes; listed in the JSON file next to this digest.", ""]
         return lines
     for t, r, rows in groups:
-        # A company's story, note and filing link go with its most important
+        # A company's filing links and note go with its most important
         # changes. Below that level its changes are folded under its name, so
         # the medium section reads as a list of companies to open.
         top = next(lvl for lvl, _ in LEVELS if any(x["materiality"] == lvl for x in r["rows"]))
         if level == top:
             lines += [company_heading(t, r), ""]
-            if r.get("story"):
-                lines += [f"> {r['story']}", ""]
             if r["note"]:
                 lines += [r["note"], ""]
             lines += [change_line(x) for x in rows] + [""]
@@ -553,8 +586,8 @@ def run_details(processed: list[tuple[str, dict]], model: str) -> list[str]:
                      f"| {verified} of {len(rows)} | {len(r.get('skipped') or [])} | ${cost:.3f} |")
     lines += ["", f"Model `{model}`. Summaries cost ${total:.2f} in total (the headlines add "
               f"a little). Every summary quotes the filing and the quotes are checked; a ⚠️ "
-              f"marks a summary whose quote was not found. Headlines and stories are written "
-              f"from the checked summaries. Full detail is in the JSON file next to this digest.",
+              f"marks a summary whose quote was not found. Table headlines are written "
+              f"from the checked summaries and are not themselves checked against the filing. Full detail is in the JSON file next to this digest.",
               "", "</details>", ""]
     return lines
 
@@ -656,7 +689,7 @@ def run(client, model: str, tickers: list[str], force_latest: bool = False,
                                   f"{type(e).__name__}: {e}")
                 break  # keep later filings for next week, in order
             if result["rows"]:
-                add_story(client, model, ticker, result)
+                add_headline(client, model, ticker, result)
             results.setdefault(ticker, []).append(result)
             if filing["accession"] not in done:
                 done.append(filing["accession"])
