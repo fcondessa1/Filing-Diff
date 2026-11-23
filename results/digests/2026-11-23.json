@@ -1,0 +1,366 @@
+{
+ "QBTS": [
+  {
+   "filing": {
+    "form": "10-Q",
+    "filing_date": "2026-11-16",
+    "accession": "0001907982-26-000186",
+    "url": "https://www.sec.gov/Archives/edgar/data/1907982/000190798226000186/qbts-20260930.htm"
+   },
+   "previous": {
+    "form": "10-Q",
+    "filing_date": "2026-08-06",
+    "accession": "0001907982-26-000129",
+    "url": "https://www.sec.gov/Archives/edgar/data/1907982/000190798226000129/qbts-20260630.htm"
+   },
+   "rows": [
+    {
+     "kind": "added",
+     "old": null,
+     "new": "We are, and may in the future be, subject to securities litigation, which is expensive and could divert management attention. Companies that have experienced volatility in the market price of their stock have been subject to securities litigation, including class action litigation. In October 2026, two actions were filed against us and certain current and former members of our senior management in the United States District Court for the Northern District of California, asserting claims under Sections 10(b) and 20(a) of the Exchange Act and alleging that we and certain of our current and former officers made materially false or misleading statements, including about our operational and financial performance and growth. In November 2026, a derivative suit was filed in the same court against us and certain current and former directors and officers, alleging that the named directors and officers issued or caused the Company to issue materially false or misleading statements, including about our performance and growth and our internal controls, and that the Company suffered as a result. See Part II, Item 1, “Legal Proceedings.” We may be subject to additional securities class actions, shareholder derivative suits or other claims relating to the matters alleged or otherwise. Such litigation, regardless of its merit or outcome, could result in substantial costs and diversion of management’s attention and resources, which could have a material adverse effect on our business, financial condition, and results of operations. Any adverse determination in litigation could also subject us to significant liabilities.",
+     "company": "QBTS",
+     "summary": "The company added a new risk factor disclosing two pending securities lawsuits filed in October and November 2026 alleging materially false statements about operational performance, financial performance, growth, and internal controls.",
+     "materiality": "high",
+     "materiality_reason": "The company is now disclosing specific, active securities litigation against current and former management and directors, which represents a material new legal risk and potential financial liability for investors.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "In October 2026, two actions were filed against us and certain current and former members of our senior management"
+      },
+      {
+       "source": "new",
+       "quote": "In November 2026, a derivative suit was filed in the same court against us and certain current and former directors and officers"
+      },
+      {
+       "source": "new",
+       "quote": "could result in substantial costs and diversion of management's attention and resources, which could have a material adverse effect"
+      }
+     ],
+     "check": {
+      "status": "VERIFIED",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "In October 2026, two actions were filed against us and certain current and former members of our senior management",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "In November 2026, a derivative suit was filed in the same court against us and certain current and former directors and officers",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "could result in substantial costs and diversion of management's attention and resources, which could have a material adverse effect",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 991,
+     "output_tokens": 202,
+     "cached": false
+    },
+    {
+     "kind": "added",
+     "old": null,
+     "new": "The execution of the OTA and the SIA with the Department, the receipt of funding thereunder and the Department’s ownership of an equity interest in the Company may subject the Company and its stockholders to a number of risks and uncertainties. •\nThe timing and amount of funding under the OTA remain uncertain\n. The Company’s receipt of Award funds is subject to the terms and conditions of the OTA, and there can be no assurance that the Company will receive the anticipated funds on the expected timeline, in the anticipated amounts, or at all. The Company’s receipt of funds also depends on the continued availability of appropriations from the U.S. government and the willingness and ability of the executive branch to provide the funding and support contemplated by the transactions.",
+     "company": "QBTS",
+     "summary": "The company added a new risk factor disclosing uncertainties regarding timing and amount of funding under its OTA with the Department, and the government's continued appropriations and support.",
+     "materiality": "high",
+     "materiality_reason": "This names a new, material risk that government funding—central to the company's business—is uncertain and dependent on factors outside its control, which directly affects investor returns.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "The timing and amount of funding under the OTA remain uncertain."
+      },
+      {
+       "source": "new",
+       "quote": "there can be no assurance that the Company will receive the anticipated funds on the expected timeline, in the anticipated amounts, or at all."
+      }
+     ],
+     "check": {
+      "status": "VERIFIED",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "The timing and amount of funding under the OTA remain uncertain.",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "there can be no assurance that the Company will receive the anticipated funds on the expected timeline, in the anticipated amounts, or at all.",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 845,
+     "output_tokens": 159,
+     "cached": false
+    },
+    {
+     "kind": "added",
+     "old": null,
+     "new": "•\nThe transactions are subject to risks from changes in laws, regulations, or their interpretation, as well as shifts in federal administration and policy priorities\n. The legislative, judicial or executive branches of the U.S. government could determine in the future that all or a portion of the transactions were unauthorized, void or voidable. No agency or branch of the U.S. government other than the Department has made any commitment to support, or refrain from challenging, the transactions. Legal challenges, administrative rulings, litigation or geopolitical developments could materially impair funding, alter the Company’s obligations under the OTA, or otherwise adversely affect the anticipated benefits of the transactions and enforcement against a government counterparty is inherently uncertain given the defenses available to the U.S. government.",
+     "company": "QBTS",
+     "summary": "The company added a risk factor describing potential legal, regulatory, and administrative challenges to its government transactions, including the possibility that transactions could be deemed unauthorized or void.",
+     "materiality": "high",
+     "materiality_reason": "The company identifies material risks that could impair funding, alter contractual obligations, or eliminate anticipated benefits from what appear to be significant government agreements.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "Legal challenges, administrative rulings, litigation or geopolitical developments could materially impair funding, alter the Company's obligations under the OTA"
+      },
+      {
+       "source": "new",
+       "quote": "The legislative, judicial or executive branches of the U.S. government could determine in the future that all or a portion of the transactions were unauthorized, void or voidable"
+      }
+     ],
+     "check": {
+      "status": "VERIFIED",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "Legal challenges, administrative rulings, litigation or geopolitical developments could materially impair funding, alter the Company's obligations under the OTA",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "The legislative, judicial or executive branches of the U.S. government could determine in the future that all or a portion of the transactions were unauthorized, void or voidable",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 852,
+     "output_tokens": 174,
+     "cached": false
+    },
+    {
+     "kind": "added",
+     "old": null,
+     "new": "•\nThe transactions are dilutive to existing stockholders\n. The issuance of the Shares to the Department at a discount to the market price of the Company’s common stock on the Award Date is dilutive to existing stockholders.",
+     "company": "QBTS",
+     "summary": "The company added a risk disclosure that share issuances to the Department of Energy at a discount are dilutive to existing stockholders.",
+     "materiality": "medium",
+     "materiality_reason": "Existing shareholders should care about dilution from discounted share issuances, though this describes an already-known transaction rather than a new risk.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "The issuance of the Shares to the Department at a discount to the market price of the Company's common stock on the Award Date is dilutive to existing stockholders."
+      },
+      {
+       "source": "new",
+       "quote": "The transactions are dilutive to existing stockholders"
+      }
+     ],
+     "check": {
+      "status": "VERIFIED",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "The issuance of the Shares to the Department at a discount to the market price of the Company's common stock on the Award Date is dilutive to existing stockholders.",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "The transactions are dilutive to existing stockholders",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 739,
+     "output_tokens": 155,
+     "cached": false
+    },
+    {
+     "kind": "added",
+     "old": null,
+     "new": "•\nThe Department’s equity position in the Company may limit potential future strategic transactions\n. Although the SIA restricts the Department’s ability to vote the Shares except with respect to certain specified matters, the existence of a U.S. government equity interest, together with the Department’s contractual rights, including registration rights, may limit the Company’s ability to pursue potential future strategic transactions that could be beneficial to stockholders, including by limiting the willingness of third parties to engage in such transactions with the Company.",
+     "company": "QBTS",
+     "summary": "The company added a new risk factor that the Department of Defense's equity stake and contractual rights may inhibit future strategic transactions.",
+     "materiality": "high",
+     "materiality_reason": "An investor should care because this describes a new structural constraint on the company's strategic flexibility that could limit value-creation opportunities.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "The Department's equity position in the Company may limit potential future strategic transactions"
+      },
+      {
+       "source": "new",
+       "quote": "the existence of a U.S. government equity interest, together with the Department's contractual rights, including registration rights, may limit the Company's ability to pursue potential future strategic transactions"
+      }
+     ],
+     "check": {
+      "status": "VERIFIED",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "The Department's equity position in the Company may limit potential future strategic transactions",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "the existence of a U.S. government equity interest, together with the Department's contractual rights, including registration rights, may limit the Company's ability to pursue potential future strategic transactions",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 792,
+     "output_tokens": 151,
+     "cached": false
+    },
+    {
+     "kind": "added",
+     "old": null,
+     "new": "•\nThe financial, tax and accounting treatment of the transactions is uncertain\n. Given the novelty and complexity of the OTA and the SIA, and the limited precedent for the accounting treatment for our transactions with the Department, the Company’s analysis of the financial, tax and accounting implications of its commitments and obligations thereunder has required the exercise of significant judgment in determining the appropriate accounting treatment. While we believe we have selected an appropriate accounting approach for these transactions in our Consolidated Condensed Financial Statements in this Form 10-Q, there are other potential approaches that, if applied, would result in materially different financial results for our third quarter of 2026 and could also materially and adversely impact our results for future periods. Refer to Note 2—“Basis of Presentation and Summary of Significant Accounting Policies—U.S. Department of Commerce Award and Securities Issuance Agreement” and Note 14—“Stockholders’ Equity—U.S. Department of Commerce Award and Securities Issuance Agreement” within the Notes to Condensed Consolidated Financial Statements for additional information. We recently voluntarily initiated a consultation with the SEC staff to seek confirmation that they do not disagree with the accounting treatment we have selected; however, this consultation has not been concluded as of the date of this filing. If the SEC staff have a different view of the appropriate accounting treatment, we may be required to materially revise our third quarter 2026 financial results, including the recognition of additional costs or losses, and our results for future periods may also be materially and adversely impacted.",
+     "company": "QBTS",
+     "summary": "The company added a new risk disclosure acknowledging uncertainty in the accounting treatment of transactions under its Department of Commerce awards, noting that alternative approaches could produce materially different financial results and that SEC staff consultation is ongoing.",
+     "materiality": "high",
+     "materiality_reason": "This discloses a material accounting uncertainty that could require significant restatement of financial results depending on SEC staff conclusions, directly affecting reported earnings and investor reliance on current financial statements.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "the financial, tax and accounting treatment of the transactions is uncertain"
+      },
+      {
+       "source": "new",
+       "quote": "other potential approaches that, if applied, would result in materially different financial results for our third quarter of 2026"
+      },
+      {
+       "source": "new",
+       "quote": "If the SEC staff have a different view of the appropriate accounting treatment, we may be required to materially revise our third quarter 2026 financial results"
+      }
+     ],
+     "check": {
+      "status": "PARTIAL",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "the financial, tax and accounting treatment of the transactions is uncertain",
+        "found": false,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "other potential approaches that, if applied, would result in materially different financial results for our third quarter of 2026",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "If the SEC staff have a different view of the appropriate accounting treatment, we may be required to materially revise our third quarter 2026 financial results",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 1029,
+     "output_tokens": 193,
+     "cached": false
+    },
+    {
+     "kind": "added",
+     "old": null,
+     "new": "•\nThe Company may experience other adverse consequences resulting from the announcement or completion of the transactions\n. Given the limited number of precedents for transactions of this type involving the U.S. government taking an equity position in a company such as the Company, it is difficult to foresee all potential consequences. These may include adverse reactions from investors, employees, customers, suppliers or other business or commercial partners, as well as increased public or political scrutiny of the Company, and there may also be litigation relating to the transactions.",
+     "company": "QBTS",
+     "summary": "The company added a risk factor disclosing potential adverse consequences from government equity transactions, including investor/employee/customer reactions, public scrutiny, and litigation.",
+     "materiality": "medium",
+     "materiality_reason": "An investor would want to know about potential business disruption from controversial government involvement and legal challenges, though the company acknowledges uncertainty about specific impacts.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "The Company may experience other adverse consequences resulting from the announcement or completion of the transactions."
+      },
+      {
+       "source": "new",
+       "quote": "adverse reactions from investors, employees, customers, suppliers or other business or commercial partners, as well as increased public or political scrutiny"
+      },
+      {
+       "source": "new",
+       "quote": "there may also be litigation relating to the transactions"
+      }
+     ],
+     "check": {
+      "status": "VERIFIED",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "The Company may experience other adverse consequences resulting from the announcement or completion of the transactions.",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "adverse reactions from investors, employees, customers, suppliers or other business or commercial partners, as well as increased public or political scrutiny",
+        "found": true,
+        "wrong_source": false
+       },
+       {
+        "source": "new",
+        "quote": "there may also be litigation relating to the transactions",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 794,
+     "output_tokens": 173,
+     "cached": false
+    },
+    {
+     "kind": "added",
+     "old": null,
+     "new": "Any of the foregoing could have a material adverse effect on the Company’s revenue, operations, financial position, cash flows, access to financing, cost structure, competitiveness, reputation, profitability and prospects, and could exacerbate other risks discussed in the Company’s 2025 Form 10-K, Q1 2026 Form 10-Q and Q2 2026 Form 10-Q.",
+     "company": "QBTS",
+     "summary": "The company added a concluding statement emphasizing that enumerated risks could materially harm revenue, operations, financial position, cash flows, financing access, cost structure, competitiveness, reputation, profitability and prospects, and could compound other disclosed risks.",
+     "materiality": "low",
+     "materiality_reason": "This is standard boilerplate language that summarizes the general impact of risks without introducing new specific risk factors or materially changing the scope of existing ones.",
+     "evidence": [
+      {
+       "source": "new",
+       "quote": "Any of the foregoing could have a material adverse effect on the Company's revenue, operations, financial position, cash flows, access to financing, cost structure, competitiveness, reputation, profitability and prospects"
+      }
+     ],
+     "check": {
+      "status": "VERIFIED",
+      "evidence": [
+       {
+        "source": "new",
+        "quote": "Any of the foregoing could have a material adverse effect on the Company's revenue, operations, financial position, cash flows, access to financing, cost structure, competitiveness, reputation, profitability and prospects",
+        "found": true,
+        "wrong_source": false
+       }
+      ],
+      "verdict_supported": null
+     },
+     "input_tokens": 779,
+     "output_tokens": 161,
+     "cached": false
+    }
+   ],
+   "skipped": [],
+   "note": null,
+   "not_repeated": [],
+   "cites_previous_10q": false,
+   "headline": "Government contracts bring legal, funding, and accounting uncertainties",
+   "company_summary": "The company disclosed multiple new risks tied to government partnerships, including two pending securities lawsuits alleging false statements, uncertainties about Department funding timing and amount, potential challenges that could void transactions, and unresolved accounting treatment questions. Additionally, the Department of Defense's equity stake could constrain future strategic transactions, while discounted share issuances to the Department of Energy dilute existing shareholders and may trigger investor, employee, and customer backlash."
+  }
+ ]
+}
